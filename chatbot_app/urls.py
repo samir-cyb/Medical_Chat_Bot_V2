@@ -8,4 +8,5 @@ urlpatterns = [
     path('chat/', views.chat, name='chat'),
     path('api/send_message/', views.send_message, name='send_message'),
     path('api/clear_chat/', views.clear_chat, name='clear_chat'),
+    path('debug/chatbot-status/', views.debug_chatbot_status, name='debug_chatbot_status'),
 ]

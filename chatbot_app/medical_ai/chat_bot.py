@@ -3,9 +3,9 @@ warnings.filterwarnings("ignore")
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
-import django
+"""import django
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "medical_chatbot.settings")  # replace with your project settings path
-django.setup()
+django.setup()"""
 
 
 from langchain_community.embeddings import HuggingFaceEmbeddings
@@ -25,8 +25,8 @@ class MedicalChatBot:
     
     
     
-    def is_informational_question(self, user_input: str) -> bool:
-        """Check if the user is asking for general information rather than describing symptoms"""
+    """def is_informational_question(self, user_input: str) -> bool:
+        
         input_lower = user_input.lower()
         
         informational_phrases = [
@@ -75,7 +75,7 @@ class MedicalChatBot:
             if re.search(pattern, input_lower):
                 return True
         
-        return False
+        return False"""
         
     def reset_conversation(self):
         """Reset the conversation state"""
@@ -162,13 +162,23 @@ class MedicalChatBot:
                 model_kwargs={'device': 'cpu'},
                 encode_kwargs={'normalize_embeddings': False}
             )
-
+            
+            print(f"DEBUG: Loading vector database from: {PERSIST_DIRECTORY}")
+            print(f"DEBUG: Database exists: {os.path.exists(PERSIST_DIRECTORY)}")
+            
+            if os.path.exists(PERSIST_DIRECTORY):
+                print("DEBUG: Vector database files found:")
+                for file in os.listdir(PERSIST_DIRECTORY):
+                    print(f"  - {file}")
             # 2. Load the existing vector database
             self.vectordb = Chroma(
                 persist_directory=PERSIST_DIRECTORY,
                 embedding_function=embeddings,
                 collection_name="medical_knowledge"
             )
+            
+            test_results = self.vectordb.similarity_search("fever", k=1)
+            print(f"DEBUG: Database test query returned {len(test_results)} results")
 
             # 3. Initialize the local LLM with fallback options
             model_options = ["gemma:2b", "llama2:7b", "llama2", "mistral"]
@@ -253,8 +263,144 @@ class MedicalChatBot:
 
     def extract_symptoms(self, user_input: str) -> List[str]:
         """Extract and normalize symptoms from user input using the symptom mapping"""
+        print(f"🔍 extract_symptoms analyzing: '{user_input}'")
         user_input_lower = user_input.lower()
+        print(f"DEBUG: Lowercase: '{user_input_lower}'")
         found_symptoms = set()
+        
+        # Comprehensive variation mapping for all diseases
+        variation_mapping = {
+            # Dengue-related variations
+            "high fever": "high fever with sudden onset",
+            "very high fever": "high fever with sudden onset", 
+            "spiking fever": "high fever with sudden onset",
+            "sudden fever": "high fever with sudden onset",
+            "pain behind my eyes": "pain behind eyes",
+            "eye pain": "pain behind eyes",
+            "eyes hurting": "pain behind eyes",
+            "behind eyes": "pain behind eyes",
+            "retro orbital pain": "pain behind eyes",
+            "really bad headache": "severe headache",
+            "worst headache": "severe headache",
+            "excruciating headache": "severe headache",
+            "debilitating headache": "severe headache",
+            "muscle aches": "severe muscle pain",
+            "body hurting": "severe muscle pain",
+            "whole body pain": "severe muscle pain",
+            "throwing up": "vomiting",
+            "puking": "vomiting",
+            "feeling sick": "nausea",
+            "queasy": "nausea",
+            
+            # Chikungunya-related variations
+            "joint aches": "debilitating joint pain",
+            "joints hurting": "debilitating joint pain",
+            "can't move joints": "debilitating joint pain",
+            "swollen joints": "joint swelling",
+            "puffy joints": "joint swelling",
+            "inflamed joints": "joint swelling",
+            "red eyes": "conjunctival injection",
+            "bloodshot eyes": "conjunctival injection",
+            "eye redness": "conjunctival injection",
+            "bumpy rash": "maculopapular rash",
+            "raised rash": "maculopapular rash",
+            
+            # Appendicitis-related variations
+            "stomach pain": "abdominal pain",
+            "belly pain": "abdominal pain",
+            "tummy ache": "abdominal pain",
+            "right side pain": "sharp pain lower right abdomen",
+            "lower right pain": "sharp pain lower right abdomen",
+            "rlq pain": "right lower quadrant pain",
+            "rebound pain": "rebound tenderness",
+            "tender abdomen": "rebound tenderness",
+            
+            # Heart-related variations
+            "chest discomfort": "chest pain",
+            "chest tightness": "chest pain",
+            "arm pain": "pain radiating to arm or jaw",
+            "jaw pain": "pain radiating to arm or jaw",
+            "back pain": "pain radiating to arm or jaw",
+            "short of breath": "shortness of breath",
+            "breathing problems": "shortness of breath",
+            "can't breathe": "shortness of breath",
+            "heart racing": "heart palpitations",
+            "pounding heart": "heart palpitations",
+            
+            # General symptom variations
+            "fever": "high fever",  # Map general fever to high fever for better matching
+            "temperature": "fever",
+            "hot": "fever",
+            "burning up": "fever",
+            "head hurting": "headache",
+            "head ache": "headache",
+            "coughing": "cough",
+            "hacking": "cough",
+            "runny nose": "runny nose",
+            "nose running": "runny nose",
+            "sore throat": "sore throat",
+            "throat pain": "sore throat",
+            "body pains": "body aches",
+            "aching body": "body aches",
+            "skin rash": "rash",
+            "red spots": "rash",
+            "skin irritation": "rash",
+            "feeling sick": "nausea",
+            "upset stomach": "nausea",
+            "vomiting": "vomiting",
+            "throwing up": "vomiting",
+            "stomach pain": "abdominal pain",
+            "belly ache": "abdominal pain",
+            "bleeding gums": "bleeding gums",
+            "gums bleeding": "bleeding gums",
+            "nose bleed": "nosebleeds",
+            "nose bleeding": "nosebleeds",
+            "tired": "fatigue",
+            "exhausted": "fatigue",
+            "no energy": "lethargy",
+            "confused": "confusion",
+            "disoriented": "confusion",
+            "stiff neck": "stiff neck",
+            "neck stiffness": "stiff neck",
+            "light hurts eyes": "light sensitivity",
+            "sensitive to light": "light sensitivity",
+            
+            # Severity variations
+            "mild fever": "mild fever",
+            "low grade fever": "mild fever",
+            "slight fever": "mild fever",
+            "bad headache": "severe headache",
+            "terrible headache": "severe headache",
+            "unbearable headache": "severe headache",
+            "constant cough": "persistent cough",
+            "nonstop coughing": "persistent cough",
+            "severe stomach pain": "severe abdominal pain",
+            "extreme abdominal pain": "severe abdominal pain",
+            "can't breathe properly": "difficulty breathing",
+            "struggling to breathe": "difficulty breathing",
+            
+            "dizziness": ["dizzy", "light.headed", "vertigo", "spinning"],
+            "weakness": ["weak", "fatigue", "exhaust", "no energy", "can't move"],
+            "body pain": ["body pain", "whole body hurt", "muscle ache", "aching"],
+            "sore throat": ["sore throat", "throat hurt", "throat pain", "scratchy throat"],
+            "fever": ["fever", "temperature", "hot", "burning", "warm"],
+            "runny nose": ["runny nose", "nose run", "nasal", "stuffy nose"]
+        }
+        
+        # Check for variations first (most specific to least specific)
+        for variation, normalized in variation_mapping.items():
+            if isinstance(normalized, list):
+                # If it's a list, use the first item as the normalized symptom
+                # and check all variations in the list
+                for var in normalized:
+                    if re.search(r'\b' + re.escape(var) + r'\b', user_input_lower):
+                        found_symptoms.add(normalized[0])  # Use first item as normalized
+                        break
+            else:
+                # If it's a string, process normally
+                if re.search(r'\b' + re.escape(variation) + r'\b', user_input_lower):
+                    found_symptoms.add(normalized)
+    
         
         # Create a reverse mapping for easy lookup
         reverse_mapping = {}
@@ -329,12 +475,13 @@ class MedicalChatBot:
         elif any(term in user_input_lower for term in ["mild pain", "slight pain", "minor pain", "1/10", "2/10", "3/10", "4/10"]):
             self.user_info["pain_severity"] = "mild"
                 
+        print(f"✅ Found symptoms: {list(found_symptoms)}")
         return list(found_symptoms)
 
     def calculate_symptom_score(self, user_symptoms: List[str], condition_symptoms: List[str]) -> float:
-        """Calculate a weighted match score with synonym matching"""
-        score = 0
-        max_possible = 0
+        """Calculate a weighted match score between user symptoms and condition symptoms"""
+        if not user_symptoms or not condition_symptoms:
+            return 0
         
         # Create symptom mapping for fuzzy matching
         symptom_equivalents = {
@@ -342,25 +489,47 @@ class MedicalChatBot:
             "fever": ["temperature", "hot", "burning up"],
             "severe headache": ["bad headache", "worst headache", "excruciating headache"],
             "pain behind eyes": ["eye socket pain", "retro-orbital pain", "deep eye pain"],
+            "pain behind my eyes": ["pain behind eyes", "eye socket pain", "retro-orbital pain"],
             # Add more mappings as needed
         }
         
-        # Check each user symptom against condition symptoms
+        score = 0
+        max_user_score = 0
+        
+        # Calculate score based on user symptoms that match condition
         for user_symptom in user_symptoms:
             # Get all equivalent ways to say this symptom
             equivalents = symptom_equivalents.get(user_symptom, []) + [user_symptom]
             
             # Check if any equivalent matches any condition symptom
+            matched = False
             for equivalent in equivalents:
                 if equivalent in condition_symptoms:
-                    score += self.symptom_weights.get(user_symptom, 5)
+                    symptom_weight = self.symptom_weights.get(equivalent, 
+                                        self.symptom_weights.get(user_symptom, 5))
+                    score += symptom_weight
+                    matched = True
                     break
+            
+            # Add to max score whether matched or not
+            max_user_score += self.symptom_weights.get(user_symptom, 5)
         
-        # Calculate max possible based on condition symptoms
-        for symptom in condition_symptoms:
-            max_possible += self.symptom_weights.get(symptom, 5)
-                
-        return (score / max_possible * 100) if max_possible > 0 else 0
+        # Add travel history bonus for relevant conditions
+        travel_bonus = 0
+        if self.user_info.get("travel_history"):
+            condition_str = str(condition_symptoms).lower()
+            if ("dengue" in condition_str and 
+                self.user_info["travel_history"] in self.dengue_prone_areas):
+                travel_bonus = 20
+            elif ("chikungunya" in condition_str and 
+                self.user_info["travel_history"] in self.chikungunya_prone_areas):
+                travel_bonus = 20
+        
+        # Calculate final score (percentage of user symptoms matched + travel bonus)
+        final_score = (score / max_user_score * 80) if max_user_score > 0 else 0
+        final_score += travel_bonus
+        
+        return min(final_score, 100)
 
     def find_best_matches(self, user_symptoms: List[str], top_n: int = 3) -> List[Dict]:
         """Find the top conditions that match the user's symptoms"""
@@ -392,11 +561,14 @@ class MedicalChatBot:
             
             # Ask condition-specific questions
             if "dengue" in condition_name:
-                questions.extend([
-                    "Have you noticed any bleeding from your gums or nose?",
-                    "Do you have any red spots or rash on your skin?",
-                    "Have you traveled to any dengue-prone areas recently?"
-                ])
+                if not self.user_info.get("rash") and "Do you have any red spots or rash on your skin?" not in self.asked_questions:
+                    questions.append("Do you have any red spots or rash on your skin?")
+                if not self.user_info.get("bleeding_symptoms") and "Have you noticed any bleeding from your gums or nose?" not in self.asked_questions:
+                    questions.append("Have you noticed any bleeding from your gums or nose?")
+                if not self.user_info.get("travel_history") and "Have you traveled to any dengue-prone areas recently?" not in self.asked_questions:
+                    questions.append("Have you traveled to any dengue-prone areas recently?")
+                
+                
             elif "chikungunya" in condition_name:
                 questions.extend([
                     "Are your joints swollen or painful to move?",
@@ -524,19 +696,54 @@ class MedicalChatBot:
         input_lower = user_input.lower().strip()
         
         if not input_lower:
+            print("RETURNING: casual (empty input)")
             return 'casual'
+
+        # 1. Check for exit commands FIRST (highest priority)
+        exit_commands = ['quit', 'exit', 'bye', 'goodbye', 'stop', 'end']
+        if any(exit_cmd in input_lower for exit_cmd in exit_commands):
+            print("RETURNING: exit")
+            return 'exit'
         
         # DEBUG: Print what we're analyzing
         print(f"ANALYZING: '{user_input}'")
         print(f"is_medical_chat: {self.is_medical_chat}")
-        print(f"chat_history: {self.chat_history}")
+        print(f"last_question: '{self.last_question}'")
         
-        # 1. Check for exit commands FIRST (highest priority)
-        if any(exit_cmd in input_lower for exit_cmd in ['quit', 'exit', 'bye', 'goodbye']):
-            print("RETURNING: exit")
-            return 'exit'
+        # 2. Check if this is likely an answer to a medical question (CONTEXT-AWARE)
+        if self.is_medical_chat and self.last_question:
+            print(f"🔍 Medical context detected. Last question: '{self.last_question}'")
+            
+            # Check for numeric answers to scale questions
+            last_question_lower = self.last_question.lower()
+            if any(term in last_question_lower for term in ['scale', '1-10', 'rating', 'how severe', 'scale of']):
+                if (input_lower.isdigit() or 
+                    any(word in input_lower for word in ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'])):
+                    print("RETURNING: medical (pain scale answer)")
+                    return 'medical'
+            
+            # Check for duration/time answers
+            if any(term in last_question_lower for term in ['how long', 'duration', 'when did', 'how many days', 'how many hours']):
+                if (any(unit in input_lower for unit in ['day', 'days', 'hour', 'hours', 'week', 'weeks', 'month', 'months']) or
+                    input_lower.isdigit()):
+                    print("RETURNING: medical (duration answer)")
+                    return 'medical'
+            
+            # Check for yes/no answers
+            if any(term in last_question_lower for term in ['are you', 'do you', 'have you', 'is there', 'does it', 'can you']):
+                if any(word in input_lower for word in ['yes', 'yeah', 'yep', 'sure', 'ok', 'okay', 'no', 'nope', 'not', 'never', 'nah']):
+                    print("RETURNING: medical (yes/no answer)")
+                    return 'medical'
+            
+            # Check for temperature answers
+            if any(term in last_question_lower for term in ['temperature', 'temp', 'fever', 'degree', 'how high']):
+                if (any(char in input_lower for char in ['°', 'deg']) or 
+                    input_lower.isdigit() or 
+                    any(word in input_lower for word in ['high', 'low', 'normal'])):
+                    print("RETURNING: medical (temperature answer)")
+                    return 'medical'
         
-        # 2. Check for informational questions SECOND
+        # 3. Check for informational questions
         is_info = self.is_informational_question(user_input)
         print(f"is_informational_question: {is_info}")
         
@@ -544,12 +751,12 @@ class MedicalChatBot:
             print("RETURNING: informational")
             return 'informational'
         
-        # 3. If we're already in a medical conversation, continue it
+        # 4. If we're already in a medical conversation, continue it
         if self.is_medical_chat and len(self.chat_history) > 0:
             print("RETURNING: medical (continuation)")
             return 'medical'
         
-        # 4. Check for medical keywords (but exclude informational patterns)
+        # 5. Check for medical keywords (but exclude informational patterns)
         medical_keywords = [
             r'\bpain\b', r'\bhurt\b', r'\bache\b', r'\bsore\b', r'\binjury\b', r'\bwound\b', 
             r'\bbleed\b', r'\bblood\b', r'\bfever\b', r'\btemperature\b', r'\bcough\b', 
@@ -570,11 +777,12 @@ class MedicalChatBot:
         has_medical_keyword = any(re.search(keyword, input_lower) for keyword in medical_keywords)
         print(f"has_medical_keyword: {has_medical_keyword}")
         
-        if has_medical_keyword:
+        if has_medical_keyword and not is_info:
             print("RETURNING: medical (new conversation)")
+            self.is_medical_chat = True  # <-- ADD THIS LINE
             return 'medical'
         
-        # 5. Casual greetings and small talk
+        # 6. Casual greetings and small talk
         casual_patterns = [
             r'^hello$', r'^hi$', r'^hey$', r'how are you', r'good morning', r'good afternoon',
             r'good evening', r'what\'s up', r'howdy', r'greetings', r'thank you', r'thanks',
@@ -587,6 +795,8 @@ class MedicalChatBot:
         
         print("RETURNING: casual (default)")
         return 'casual'
+    
+    
     
     def is_informational_question(self, user_input: str) -> bool:
         """Check if the user is asking for general information rather than describing symptoms"""
@@ -835,6 +1045,8 @@ class MedicalChatBot:
         if has_medical_keywords and self.is_informational_question(user_input):
             return 'informational'
         elif has_medical_keywords:
+            print("RETURNING: medical (new conversation)")
+            self.is_medical_chat = True
             return 'medical'
         # Casual greetings and small talk
         casual_patterns = [
@@ -852,19 +1064,27 @@ class MedicalChatBot:
     def detect_affirmative_negative(self, user_input: str) -> str:
         """Detect if the user response is affirmative, negative, or unclear"""
         input_lower = user_input.lower().strip()
+        print(f"DEBUG detect_affirmative_negative: Input='{input_lower}'")
         
+        # Handle simple yes/no responses first
+        if input_lower == 'yes':
+            print("DEBUG: Simple 'yes' detected")
+            return "affirmative"
+        elif input_lower == 'no':
+            print("DEBUG: Simple 'no' detected")
+            return "negative"
+        
+        # Then handle more complex cases with word counting
         negative_words = ['no', 'not', 'never', 'none', "don't", "didn't", "haven't", "hasn't", 
                         "wasn't", "isn't", "aren't", "won't", "can't", "couldn't", "wouldn't", 
                         "shouldn't", "nope", "nah", "negative"]
+        
         affirmative_words = ['yes', 'yeah', 'yep', 'sure', 'ok', 'okay', 'alright', 'certainly', 
                             'definitely', 'absolutely', 'of course', 'have', 'did', 'was', 'is', 
                             'are', 'will', 'can', 'could', 'would', 'should', 'i have', 'i did',
                             'i was', 'i am']
         
-        # Check for negative words
         negative_count = sum(1 for word in negative_words if re.search(r'\b' + re.escape(word) + r'\b', input_lower))
-        
-        # Check for affirmative words
         affirmative_count = sum(1 for word in affirmative_words if re.search(r'\b' + re.escape(word) + r'\b', input_lower))
         
         if negative_count > affirmative_count:
@@ -879,11 +1099,23 @@ class MedicalChatBot:
         input_lower = user_input.lower().strip()
         
         greetings = [
-            "Hello! I'm here to help with any health concerns you might have.",
-            "Hi there! How can I assist you with your health today?",
-            "Greetings! I'm your medical assistant. What health concerns would you like to discuss?",
-            "Hi! I'm here and ready to help. Please describe any symptoms you're experiencing."
-        ]
+                # Friendly & approachable
+                "Hello! I'm here to help with any health concerns you might have.",
+                "Hi there! How can I assist you with your health today?",
+                "Hi! I'm here and ready to help. Please describe any symptoms you're experiencing.",
+                "Hey! I'm here to support you. What’s on your mind regarding your health?",
+
+                # Professional & clear
+                "Greetings! I'm your medical assistant. What health concerns would you like to discuss?",
+                "Welcome! I’m here to help you understand your symptoms and guide you toward the right care.",
+                "Good day! I can provide information about your symptoms and suggest next steps. What’s troubling you?",
+
+                # Warm & reassuring
+                "Hi! I’m glad you reached out. Tell me what symptoms you’ve been experiencing, and we’ll go from there.",
+                "Hello! Your health matters. Share your concerns with me, and I’ll do my best to guide you.",
+                "Hi there! Don’t worry, you’re not alone—I’m here to help you make sense of your symptoms."
+            ]
+
 
         how_are_you_responses = [
             "I'm here to help you with your health questions! How are you feeling today?",
@@ -892,16 +1124,40 @@ class MedicalChatBot:
         ]
 
         who_are_you_responses = [
-            "I am a medical diagnostic assistant. My purpose is to help you understand your symptoms and guide you to appropriate care.",
-            "I'm a helpful bot designed to provide information about medical symptoms and recommendations.",
-            "You can call me your friendly health guide! I'm here to help you understand your symptoms and suggest appropriate care."
-        ]
+                    # Professional & clear
+                    "I am a medical diagnostic assistant. My purpose is to help you understand your symptoms and guide you to appropriate care.",
+                    "I'm a helpful bot designed to provide information about medical symptoms and recommendations.",
+                    "I’m your digital health assistant, here to give you information and guide you toward the right care.",
+
+                    # Friendly & approachable
+                    "You can call me your friendly health guide! I'm here to help you understand your symptoms and suggest appropriate care.",
+                    "Think of me as your health companion—I’ll listen to your concerns and point you in the right direction.",
+                    "I'm your virtual health buddy, here to provide useful information about your symptoms and possible next steps.",
+
+                    # Reassuring & supportive
+                    "I’m an assistant built to support you with health information and guidance, but I’m not a doctor.",
+                    "I’m here to help you make sense of your symptoms and encourage you to seek professional care when needed.",
+                    "My role is to guide you with trustworthy health information so you feel more confident about your next steps."
+                ]
+
 
         what_can_you_do_responses = [
-            "I can help you understand what might be causing your symptoms and suggest appropriate medical care. Just describe how you're feeling!",
-            "My purpose is to offer guidance on symptoms, potential conditions, and recommend appropriate medical professionals.",
-            "I can provide information about symptoms, first aid, and recommend specialists. What's bothering you?"
-        ]
+                            # Friendly & inviting
+                            "I can help you understand what might be causing your symptoms and suggest appropriate medical care. Just describe how you're feeling!",
+                            "I can listen to your symptoms and guide you toward the type of medical help that might be useful.",
+                            "If you tell me what you're experiencing, I can provide information and point you in the right direction.",
+
+                            # Professional & clear
+                            "My purpose is to offer guidance on symptoms, potential conditions, and recommend appropriate medical professionals.",
+                            "I can help you better understand possible reasons for your symptoms and suggest when it may be time to see a doctor.",
+                            "I can provide information about symptoms, first aid, and recommend specialists. What's bothering you?",
+
+                            # Supportive & reassuring
+                            "I'm here to support you by making sense of your symptoms and helping you decide what steps to take next.",
+                            "Think of me as a guide—I can explain possible causes, give you general health information, and suggest professional care when needed.",
+                            "I can’t replace a doctor, but I can help you organize your symptoms and figure out what kind of healthcare provider to consult."
+                        ]
+
 
         thank_you_responses = [
             "You're welcome! Is there anything else I can help you with?",
@@ -928,38 +1184,115 @@ class MedicalChatBot:
         """Extract information from user responses to update user_info"""
         user_input_lower = user_input.lower()
         extracted_info = {}
-        
-        
+        print(f"DEBUG extract_answered_questions: Input='{user_input}', Last question='{self.last_question}'")
         response_type = self.detect_affirmative_negative(user_input)
-    
-    # Check if this is a response to the last asked question
+        print(f"DEBUG: Response type detected: {response_type}")
+
+        # Check if this is a response to the last asked question
         if self.last_question:
             last_question_lower = self.last_question.lower()
             
             # Handle bleeding-related questions
-            if any(term in last_question_lower for term in ['bleeding', 'gums', 'nose', 'blood']):
+            if any(term in last_question_lower for term in ['bleeding', 'hemorrhage', 'blood loss', 'oozing', 'flowing', 'gushing', 'gums', 'gingiva', 'gum tissue', 'gumline', 'nose', 'nostril', 'nasal passage', 'sinus', 'blood', 'plasma', 'clot', 'gore']):
                 if response_type == "affirmative":
                     extracted_info["bleeding_symptoms"] = True
                     extracted_info["gum_bleeding"] = 'gums' in last_question_lower
                     extracted_info["nose_bleeding"] = 'nose' in last_question_lower
+                    # ADD THE SYMPTOMS TO USER_SYMPTOMS
+                    if 'gums' in last_question_lower:
+                        self.user_symptoms.append("bleeding gums")
+                    if 'nose' in last_question_lower:
+                        self.user_symptoms.append("nosebleeds")
                 elif response_type == "negative":
                     extracted_info["bleeding_symptoms"] = False
                     extracted_info["gum_bleeding"] = False
                     extracted_info["nose_bleeding"] = False
+                    # REMOVE THE SYMPTOMS FROM USER_SYMPTOMS
+                    if "bleeding gums" in self.user_symptoms:
+                        self.user_symptoms.remove("bleeding gums")
+                    if "nosebleeds" in self.user_symptoms:
+                        self.user_symptoms.remove("nosebleeds")
             
+            # Handle heart problems question            
+            elif any(term in last_question_lower for term in [
+                                            'heart problems', 'cardiac problems', 'heart condition', 'cardiac disorder', 
+                                            'cardiovascular issues', 'cardiac complications', 
+                                            'heart disease', 'cardiovascular disease', 'coronary artery disease', 
+                                            'ischemic heart disease', 'coronary heart disease', 'cardiac illness', 
+                                            'heart disorder', 'cardiopathy', 
+                                            'heart history', 'cardiac history', 'cardiovascular history', 
+                                            'prior heart condition', 'past cardiac illness', 'history of heart disease', 
+                                            'previous heart problems'
+                                            ]):
+                if response_type == "affirmative":
+                    if "preexisting_conditions" not in extracted_info:
+                        extracted_info["preexisting_conditions"] = []
+                    extracted_info["preexisting_conditions"].append("heart problems")
+                elif response_type == "negative":
+                    extracted_info["no_heart_problems"] = True
+                    
+                        # Handle shortness of breath question
+            elif any(term in last_question_lower for term in [
+ 'shortness of breath', 'breathlessness', 'difficulty breathing', 'dyspnea', 
+ 'labored breathing', 'trouble breathing', 'respiratory distress', 'hard to catch breath', 'winded',
+ 'breathing', 'respiration', 'inhaling', 'exhaling', 'ventilation', 'gas exchange', 'breathing rate', 'pulmonary function',
+ 'sweating', 'perspiration', 'diaphoresis', 'clamminess', 'damp skin', 
+ 'excessive sweating', 'hyperhidrosis', 'moist skin', 'cold sweat'
+]):
+                if response_type == "affirmative":
+                    extracted_info["shortness_of_breath"] = True
+                    self.user_symptoms.append("shortness of breath")
+                elif response_type == "negative":
+                    extracted_info["shortness_of_breath"] = False
+                    if "shortness of breath" in self.user_symptoms:
+                        self.user_symptoms.remove("shortness of breath")
+                    
+             # Handle pain severity question
+            elif any(term in last_question_lower for term in [
+ 'scale', 'rating scale', 'measurement scale', 'severity scale', 'numeric scale', 'pain scale', 'grading scale',
+ '1-10', 'one to ten', 'scale of ten', 'out of ten', 'ten-point scale', 'pain score 0-10', 'zero to ten',
+ 'how severe', 'severity level', 'degree of pain', 'how bad', 'intensity', 'level of discomfort', 'extent of pain', 'how much it hurts',
+ 'pain level', 'pain rating', 'pain severity', 'pain intensity', 'discomfort level', 'ache level', 'distress level', 'suffering scale'
+]):
+                if user_input_lower.isdigit():
+                    pain_level = int(user_input_lower)
+                    extracted_info["pain_severity"] = f"{pain_level}/10"
+                    if pain_level >= 7:
+                        self.user_symptoms.append("severe pain")
+                        
             # Handle rash-related questions
-            elif any(term in last_question_lower for term in ['rash', 'skin', 'red spots']):
+            elif any(term in last_question_lower for term in [
+ 'rash', 'skin rash', 'eruption', 'breakout', 'skin irritation', 'dermatitis', 
+ 'hives', 'welts', 'skin outbreak', 'allergic rash',
+ 'skin', 'epidermis', 'dermis', 'cutaneous tissue', 'outer layer', 
+ 'complexion', 'flesh', 'integument',
+ 'red spots', 'red bumps', 'blotches', 'patches', 'red marks', 
+ 'red dots', 'lesions', 'papules', 'eruptions', 'skin discoloration'
+]):
                 if response_type == "affirmative":
                     extracted_info["rash"] = True
+                    self.user_symptoms.append("rash")  # ADD RASH TO SYMPTOMS
                 elif response_type == "negative":
                     extracted_info["rash"] = False
+                    # REMOVE RASH FROM SYMPTOMS
+                    if "rash" in self.user_symptoms:
+                        self.user_symptoms.remove("rash")
             
             # Handle joint-related questions
-            elif any(term in last_question_lower for term in ['joint', 'swollen', 'painful to move']):
+            elif any(term in last_question_lower for term in [
+ 'joint', 'articulation', 'hinge', 'synovial joint', 'bone connection', 'cartilage junction', 'musculoskeletal joint',
+ 'swollen', 'puffy', 'enlarged', 'inflamed', 'edematous', 'distended', 'bloated', 'tender swelling',
+ 'painful to move', 'restricted movement', 'stiff joint', 'limited mobility', 'reduced range of motion',
+ 'sore when moving', 'movement pain', 'joint stiffness', 'difficulty moving', 'aching with motion'
+]):
                 if response_type == "affirmative":
                     extracted_info["joint_swelling"] = True
+                    self.user_symptoms.append("joint swelling")  # ADD JOINT SWELLING TO SYMPTOMS
                 elif response_type == "negative":
                     extracted_info["joint_swelling"] = False
+                    # REMOVE JOINT SWELLING FROM SYMPTOMS
+                    if "joint swelling" in self.user_symptoms:
+                        self.user_symptoms.remove("joint swelling")
             
             # Handle travel-related questions
             elif 'travel' in last_question_lower:
@@ -968,6 +1301,17 @@ class MedicalChatBot:
                 elif response_type == "negative":
                     extracted_info["travel_history"] = "No travel"
                     extracted_info["travel_question_answered"] = True
+                    
+            elif any(term in last_question_lower for term in [
+ 'how long', 'length of time', 'duration', 'period of time', 'time span', 'over what period', 'how many days', 'since when',
+ 'fever duration', 'duration of fever', 'length of fever', 'time fever lasted', 'period of fever', 'how long fever lasted', 'fever timeline',
+ 'had fever', 'experienced fever', 'history of fever', 'suffered from fever', 'been febrile', 'fever episode', 'previously had fever'
+]):
+                # Extract duration from answer
+                duration_match = re.search(r'(\d+)\s*(day|days|hour|hours|week|weeks)', user_input_lower)
+                if duration_match:
+                    extracted_info["fever_duration"] = f"{duration_match.group(1)} {duration_match.group(2)}"
+                    extracted_info["symptom_duration"] = f"{duration_match.group(1)} {duration_match.group(2)}"
         
         # Extract duration information
         duration_match = re.search(r'(\d+)\s*(day|days|hour|hours|week|weeks|month|months)', user_input_lower)
@@ -979,7 +1323,13 @@ class MedicalChatBot:
         temp_match = re.search(r'(\d{2,3}(?:\.\d{1,2})?)\s*(degrees|°|fahrenheit|f|celcius|c|degree|deg|temp|temperature)?', user_input_lower)
         if temp_match:
             try:
-                extracted_info["fever_temperature"] = float(temp_match.group(1))
+                temperature = float(temp_match.group(1))
+                extracted_info["fever_temperature"] = temperature
+                # ADD FEVER TO SYMPTOMS BASED ON TEMPERATURE
+                if temperature >= 100.4:  # Fever threshold
+                    self.user_symptoms.append("fever")
+                    if temperature >= 102:  # High fever
+                        self.user_symptoms.append("high fever")
             except ValueError:
                 pass  # Handle invalid temperature format
         
@@ -995,7 +1345,7 @@ class MedicalChatBot:
                     extracted_info["pain_severity"] = severity
                     break
         
-        # NEW: Handle travel history responses (both positive and negative)
+        # Handle travel history responses (both positive and negative)
         travel_areas = self.dengue_prone_areas + self.chikungunya_prone_areas + self.malaria_prone_areas
         
         # Check for positive travel responses
@@ -1009,13 +1359,32 @@ class MedicalChatBot:
                 break
         
         # Check for explicit travel mentions without specific location
-        travel_keywords = ['travel', 'visited', 'been to', 'went to', 'trip to']
+        travel_keywords = [
+ 'travel', 'journey', 'voyage', 'excursion', 'exploration', 'tourism', 'commute', 'expedition', 'trip',
+ 'visited', 'went', 'stopped by', 'saw', 'called on', 'attended', 'dropped in', 'paid a visit',
+ 'been to', 'traveled to', 'stayed in', 'spent time in', 'passed through', 'resided in', 'gone to',
+ 'went to', 'headed to', 'moved toward', 'journeyed to', 'made a trip to', 'set off for', 'traveled toward',
+ 'trip to', 'holiday in', 'vacation in', 'journey to', 'tour of', 'outing to', 'visit to'
+]
+
         if any(keyword in user_input_lower for keyword in travel_keywords):
             travel_mentioned = True
         
         # Check for negative responses
-        negative_keywords = ['no', 'not', "haven't", "hasn't", "didn't", "never", "none", "nope", "nah"]
-        positive_keywords = ['yes', 'yeah', 'yep', 'sure', 'have', 'did']
+        negative_keywords = [
+ 'no', 'not', 'never', 'none',
+ "haven't", "hasn't", "didn't", "won't", "can't", "wouldn't", "shouldn't", "couldn't", "ain't",
+ 'nope', 'nah', 'naw', 'nuh-uh', 'negative', 'no way', 'not at all', 'uh-uh',
+ 'absolutely not', 'definitely not', 'under no circumstances', 'by no means', 'never ever', 'not really'
+]
+
+        positive_keywords = [
+ 'yes', 'yeah', 'yep', 'yup', 'sure', 'of course', 'certainly', 'absolutely', 'definitely',
+ 'uh-huh', 'mm-hmm', 'right', 'you bet', 'sure thing', 'ok', 'okay', 'k',
+ 'have', 'did', 'done', 'got it', 'already did', 'I have', 'I did', 'completed',
+ 'for sure', 'no doubt', 'without a doubt', 'affirmative', 'indeed', 'exactly'
+]
+
         
         has_negative = any(re.search(r'\b' + re.escape(word) + r'\b', user_input_lower) for word in negative_keywords)
         has_positive = any(re.search(r'\b' + re.escape(word) + r'\b', user_input_lower) for word in positive_keywords)
@@ -1037,18 +1406,51 @@ class MedicalChatBot:
         
         # Extract pain location
         pain_locations = {
-            "eyes": ["eyes", "eye", "behind eyes", "ocular", "retro-orbital"],
-            "chest": ["chest", "breast", "sternum"],
-            "abdomen": ["abdomen", "stomach", "belly", "tummy"],
-            "head": ["head", "headache", "migraine", "cranial"],
-            "joint": ["joint", "knee", "elbow", "wrist", "ankle", "arthralgia"],
-            "back": ["back", "spine", "spinal"],
-            "neck": ["neck", "cervical"]
-        }
+    "eyes": [
+        "eyes", "eye", "behind eyes", "ocular", "retro-orbital",
+        "eye socket", "around eyes", "vision pain", "optic"
+    ],
+    "chest": [
+        "chest", "breast", "sternum", "thorax", "rib cage",
+        "pecs", "lungs area", "heart area"
+    ],
+    "abdomen": [
+        "abdomen", "stomach", "belly", "tummy", "gut",
+        "abdominal area", "navel", "lower stomach", "upper abdomen"
+    ],
+    "head": [
+        "head", "headache", "migraine", "cranial", "skull",
+        "forehead", "temple", "occipital", "scalp", "cranium"
+    ],
+    "joint": [
+        "joint", "knee", "elbow", "wrist", "ankle", "arthralgia",
+        "shoulder", "hip", "knuckles", "toe joint", "finger joint"
+    ],
+    "back": [
+        "back", "spine", "spinal", "lower back", "upper back",
+        "lumbar", "thoracic", "vertebrae", "dorsal"
+    ],
+    "neck": [
+        "neck", "cervical", "throat", "nape", "back of neck",
+        "cervix (colloquial misentry)", "neckline"
+    ]
+}
+
         for location, keywords in pain_locations.items():
             for keyword in keywords:
                 if re.search(r'\b' + re.escape(keyword) + r'\b', user_input_lower):
                     extracted_info["pain_location"] = location
+                    # ADD PAIN SYMPTOM BASED ON LOCATION
+                    if location == "eyes":
+                        self.user_symptoms.append("pain behind eyes")
+                    elif location == "head":
+                        self.user_symptoms.append("headache")
+                    elif location == "joint":
+                        self.user_symptoms.append("joint pain")
+                    elif location == "abdomen":
+                        self.user_symptoms.append("abdominal pain")
+                    elif location == "chest":
+                        self.user_symptoms.append("chest pain")
                     break
         
         # Extract age
@@ -1070,8 +1472,31 @@ class MedicalChatBot:
                 break
         
         # Extract preexisting conditions
-        condition_keywords = ["diabetes", "hypertension", "high blood pressure", "heart disease", "asthma", 
-                            "allergies", "arthritis", "kidney disease", "liver disease"]
+        condition_keywords = [
+    # Metabolic
+    "diabetes", "diabetes mellitus", "type 1 diabetes", "type 2 diabetes", "high blood sugar", "prediabetes",
+    
+    # Cardiovascular
+    "hypertension", "high blood pressure", "blood pressure problems", 
+    "heart disease", "cardiac disease", "coronary artery disease", 
+    "ischemic heart disease", "heart condition", "heart problems",
+    
+    # Respiratory
+    "asthma", "bronchial asthma", "respiratory disease", "breathing problems",
+    
+    # Immune / Allergic
+    "allergies", "allergic reaction", "hay fever", "allergic rhinitis", "food allergy", "dust allergy",
+    
+    # Musculoskeletal
+    "arthritis", "osteoarthritis", "rheumatoid arthritis", "joint disease", "arthropathy",
+    
+    # Kidney
+    "kidney disease", "renal disease", "renal failure", "chronic kidney disease", "CKD", "nephropathy",
+    
+    # Liver
+    "liver disease", "hepatic disease", "cirrhosis", "hepatitis", "fatty liver", "liver condition"
+]
+
         for condition in condition_keywords:
             if re.search(r'\b' + re.escape(condition) + r'\b', user_input_lower):
                 if "preexisting_conditions" not in extracted_info:
@@ -1079,7 +1504,21 @@ class MedicalChatBot:
                 extracted_info["preexisting_conditions"].append(condition)
         
         # Extract current medications
-        med_keywords = ["taking", "on", "using", "prescribed", "medication", "medicine", "pill", "tablet"]
+        med_keywords = [
+    # General usage
+    "taking", "on", "using", "prescribed", 
+    "medication", "medicine", "drug", "remedy", "treatment",
+
+    # Forms of meds
+    "pill", "tablet", "capsule", "caplet", "lozenge",
+    "syrup", "liquid", "drops", "ointment", "cream", "gel",
+    "inhaler", "injection", "shot", "vaccine",
+
+    # Casual mentions
+    "meds", "script", "rx", "dose", "dosing",
+    "painkiller", "antibiotic", "supplement", "vitamin"
+]
+
         if any(keyword in user_input_lower for keyword in med_keywords):
             med_match = re.search(r"(aspirin|ibuprofen|paracetamol|acetaminophen|antibiotic|antihistamine|insulin|steroid)", user_input_lower)
             if med_match:
@@ -1087,31 +1526,51 @@ class MedicalChatBot:
                     extracted_info["current_medications"] = []
                 extracted_info["current_medications"].append(med_match.group(1))
         
+        # Remove duplicates from user_symptoms
+        self.user_symptoms = list(set(self.user_symptoms))
+        
         return extracted_info
 
     def process_medical_query(self, user_input: str) -> Tuple[str, bool]:
-        if not self.initialized:
-            return "I'm sorry, the medical assistant is not properly initialized. Please try again later.", False
+        print(f"🔍 process_medical_query called with: '{user_input}'")
+        print(f"🔍 Current last_question: '{self.last_question}'")
+        print(f"🔍 Current is_medical_chat: {self.is_medical_chat}")
+        print(f"🔍 Chat history length: {len(self.chat_history)}")
         
+        old_value = self.is_medical_chat
+        self.is_medical_chat = True
+        print(f"✅ Setting is_medical_chat to True")
+        print(f"✅ Changed is_medical_chat from {old_value} to {self.is_medical_chat}")
+        
+        if not self.initialized:
+            print("❌ Chatbot not initialized")
+            return "I'm sorry, the medical assistant is not properly initialized. Please try again later.", False
+            
         try:
             # Add user input to history
             self.chat_history.append(f"User: {user_input}")
             
              # Store the last question for context tracking
             current_last_question = self.last_question
-            self.last_question = None  # Reset for new processing
-            
+            #self.last_question = None  # Reset for new processing
+            print(f"🔍 Extracting symptoms from: '{user_input}'")
             # Extract symptoms from user input
             new_symptoms = self.extract_symptoms(user_input)
+            print(f"✅ Extracted symptoms: {new_symptoms}")
             self.user_symptoms.extend(new_symptoms)
             self.user_symptoms = list(set(self.user_symptoms))  # Remove duplicates
             
             # Extract information from user response
+            print("🔍 Extracting answered questions...")
             extracted_info = self.extract_answered_questions(user_input)
             for key, value in extracted_info.items():
                 if value:  # Only update if we got a value
                     self.user_info[key] = value
-            
+            # DEBUG: Print extracted info to see what's being captured
+            print(f"🔍 Extracted info: {extracted_info}")
+            print(f"🔍 User info: {self.user_info}")
+            print(f"🔍 User symptoms: {self.user_symptoms}")
+                
             # Check if we have enough information for diagnosis
             has_fever = any(s in self.user_symptoms for s in ["fever", "high fever", "mild fever"])
             has_headache = "headache" in self.user_symptoms or "severe headache" in self.user_symptoms
@@ -1153,8 +1612,14 @@ class MedicalChatBot:
                         return response, False
             
             # Find best matching conditions
+            print("🔍 Finding best matches...")
             best_matches = self.find_best_matches(self.user_symptoms)
-            
+            print(f"✅ Best matches found: {len(best_matches)}")
+            if best_matches:
+                for i, match in enumerate(best_matches):
+                    print(f"   Match {i+1}: {match['condition'].get('condition', 'Unknown')} - Score: {match['score']:.1f}%")
+                
+                
             # Update diagnostic stage
             if len(self.user_symptoms) < 2:
                 self.diagnostic_stage = "initial"
@@ -1182,9 +1647,9 @@ class MedicalChatBot:
                 return response, False
             
             # Otherwise, ask diagnostic questions
+            print("🔍 Getting diagnostic questions...")
             diagnostic_questions = self.get_diagnostic_questions(best_matches)
-            
-            diagnostic_questions = self.get_diagnostic_questions(best_matches)
+            print(f"✅ Diagnostic questions: {diagnostic_questions}")
         
             if diagnostic_questions:
                 # Store the question we're about to ask
@@ -1193,6 +1658,10 @@ class MedicalChatBot:
                 # Use empathetic introduction
                 empathetic_intro = self.generate_empathetic_response()
                 question = empathetic_intro + diagnostic_questions[0]
+                self.asked_questions.add(diagnostic_questions[0])
+                self.current_follow_ups = diagnostic_questions[1:]
+                 # Add bot response to history
+                self.chat_history.append(f"Bot: {question}")
             
             # If we detected travel but no location, ask for specific location
             if (self.user_info.get("travel_mentioned") and 
@@ -1219,36 +1688,80 @@ class MedicalChatBot:
                 # Add bot response to history
                 self.chat_history.append(f"Bot: {question}")
                 
+                self.chat_history.append(f"Bot: {question}")
+                print(f"✅ Returning question: {question[:100]}...")
+                print(f"✅ Setting last_question to: '{diagnostic_questions[0]}'")
+                print(f"✅ Returning question: {question[:100]}...")
+                
                 return question, True
             
             # If we don't have questions but still need more info
             if not diagnostic_questions and len(self.user_symptoms) < 3:
                 empathetic_prompts = [
-                    "I want to make sure I understand your situation correctly. Could you describe your symptoms in more detail?",
-                    "Let me help you get the right care. Please tell me more about what you're experiencing.",
-                    "I'm here to help you figure this out. Can you provide more details about your symptoms?",
-                    "I understand this might be worrying. Let's work through it together. What other symptoms are you experiencing?"
-                ]
+    # Understanding & Clarifying
+    "I want to make sure I understand your situation correctly. Could you describe your symptoms in more detail?",
+    "Let me help you get the right care. Please tell me more about what you're experiencing.",
+    "I'm here to help you figure this out. Can you provide more details about your symptoms?",
+    "I understand this might be worrying. Let's work through it together. What other symptoms are you experiencing?",
+    
+    # Reassurance
+    "That sounds uncomfortable. You're not alone—can you share a bit more about what you're going through?",
+    "I hear your concern. Could you walk me through when these symptoms started?",
+    "It’s important we get a clear picture. Can you tell me if anything makes your symptoms better or worse?",
+    
+    # Encouragement
+    "You're doing the right thing by talking about this. What other changes have you noticed?",
+    "Thank you for sharing this with me. Can you describe the severity or frequency of your symptoms?",
+    "I want to make sure we cover everything. Are there any other symptoms or details you think I should know?",
+    
+    # Compassionate Support
+    "I can imagine this feels difficult. Let's take it step by step—what symptom bothers you the most?",
+    "Your health matters, and I want to support you. Could you explain how these symptoms affect your daily life?",
+    "That must be tough to deal with. When did you first notice these symptoms?"
+]
+
                 
                 response = random.choice(empathetic_prompts)
                 self.chat_history.append(f"Bot: {response}")
+                print(f"✅ Returning prompt for more info: {response}")
                 return response, True
             
             # If we reach here, we don't have enough information but can't ask more questions
             # Provide gentle guidance to see a doctor
             empathetic_responses = [
-                "I understand you're concerned about your symptoms. Based on the information provided, I recommend consulting a healthcare professional for a proper evaluation.",
-                "I've done my best to understand your symptoms, but I think it would be best for you to see a doctor for a definitive diagnosis.",
-                "Your symptoms deserve proper medical attention. I encourage you to consult with a healthcare provider who can examine you properly."
-            ]
+    # General reassurance + guidance
+    "I understand you're concerned about your symptoms. Based on the information provided, I recommend consulting a healthcare professional for a proper evaluation.",
+    "I've done my best to understand your symptoms, but I think it would be best for you to see a doctor for a definitive diagnosis.",
+    "Your symptoms deserve proper medical attention. I encourage you to consult with a healthcare provider who can examine you properly.",
+    
+    # Supportive & caring
+    "I know it can be worrying to have these symptoms. You're not alone—please reach out to a healthcare professional who can help you further.",
+    "Your health and peace of mind are important. A doctor will be able to give you the best advice and care.",
+    "Thank you for sharing these details. To ensure you get the right treatment, I recommend contacting a healthcare provider.",
+    
+    # Safety-focused
+    "Since symptoms can sometimes overlap between different conditions, it's safest to have a medical professional evaluate your situation.",
+    "I can’t provide a diagnosis, but a doctor will be able to examine you properly and suggest the right treatment.",
+    "It’s important to get clarity on what’s causing your symptoms. Please consult with a healthcare professional as soon as you can.",
+    
+    # Encouraging action
+    "You're taking the right step by discussing your symptoms. Now I encourage you to follow up with a medical professional for a thorough check.",
+    "It’s always better to be safe when it comes to your health. Please schedule a visit with a doctor to get a proper evaluation.",
+    "Your well-being matters. A healthcare provider will be able to guide you with the most accurate advice."
+]
+
             
             response = random.choice(empathetic_responses)
             self.chat_history.append(f"Bot: {response}")
+            print(f"✅ Returning doctor recommendation: {response}")
             return response, False
             
         except Exception as e:
             error_msg = f"I apologize, but I encountered an error processing your medical query. Please try again or consult a healthcare professional."
             self.chat_history.append(f"Bot: {error_msg}")
+            print(f"❌ Error in process_medical_query: {e}")
+            import traceback
+            traceback.print_exc()
             return error_msg, False
 
     def run_chat(self):
@@ -1292,6 +1805,7 @@ class MedicalChatBot:
                 # Handle different query types
                 if query_type == 'medical':
                     self.is_medical_chat = True
+                    print(f"✅ Setting is_medical_chat to True")
                     # Only reset if this is a new medical conversation
                     if not self.chat_history or "Bot:" not in self.chat_history[-1]:
                         self.chat_history = []  # Start fresh medical conversation

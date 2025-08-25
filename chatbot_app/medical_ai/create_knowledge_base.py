@@ -6,8 +6,8 @@ from .config import KNOWLEDGE_BASE_PATH
 symptom_weights = {
     # High urgency symptoms
     "sharp pain lower right abdomen": 9, "right lower quadrant pain": 9, "rebound tenderness": 10,
-    "chest pain": 10, "pain radiating to arm or jaw": 10, "shortness of breath": 10, "heart palpitations": 9,
-    "difficulty breathing": 10, "severe dehydration": 9, "bleeding gums": 8, "nosebleeds": 8, 
+    "chest pain": 7, "pain radiating to arm or jaw": 9, "shortness of breath": 8, "heart palpitations": 9,
+    "difficulty breathing": 9, "severe dehydration": 9, "bleeding gums": 8, "nosebleeds": 8, 
     "severe abdominal pain": 9, "persistent vomiting": 9, "lethargy": 8, "restlessness": 7,
     "sudden drop in temperature": 9, "confusion": 9, "very high fever": 8, "severe bleeding": 10,
     "stiff neck": 8, "light sensitivity": 7, "severe dizziness": 8, "fainting": 9,
@@ -247,7 +247,31 @@ medical_data = [
         "first_aid": "Rest, hydrate, and use throat lozenges or salt water gargles for throat pain.",
         "follow_up_questions": ["How long have you felt fatigued?", "Is there any abdominal pain?", "Have you had recent contact with anyone who was sick?"],
         "condition": "Viral Infection"
-    }
+    },
+    
+    {
+    "symptoms": ["chest pain", "heartburn", "acid reflux", "bloating", "indigestion"],
+    "specialty": "Gastroenterology",
+    "suggested_action": "Schedule an appointment with a gastroenterologist. Avoid spicy foods and consider antacids.",
+    "urgency": "Routine",
+    "condition": "Acid Reflux / GERD"
+},
+{
+    "symptoms": ["chest pain", "difficulty swallowing", "food getting stuck", "heartburn"],
+    "specialty": "Gastroenterology", 
+    "suggested_action": "Consult a gastroenterologist for an endoscopy evaluation.",
+    "urgency": "Intermediate",
+    "condition": "Esophageal Disorder"
+},
+{
+    "symptoms": ["chest pain", "anxiety", "rapid heartbeat", "shortness of breath", "sweating"],
+    "specialty": "Cardiology / Psychiatry",
+    "suggested_action": "Consult both a cardiologist to rule out heart issues and a mental health professional for anxiety evaluation.",
+    "urgency": "Intermediate",
+    "condition": "Anxiety / Panic Attack"
+}
+    
+    
 ]
 
 # A separate database for doctor profiles
