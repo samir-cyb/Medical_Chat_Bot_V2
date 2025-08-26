@@ -11,70 +11,92 @@ symptom_weights = {
     "severe abdominal pain": 9, "persistent vomiting": 9, "lethargy": 8, "restlessness": 7,
     "sudden drop in temperature": 9, "confusion": 9, "very high fever": 8, "severe bleeding": 10,
     "stiff neck": 8, "light sensitivity": 7, "severe dizziness": 8, "fainting": 9,
+    # New high urgency symptoms
+    "sudden chest tightness": 9, "severe shortness of breath": 9, "uncontrolled bleeding": 10,
+    "sudden severe headache": 9, "loss of consciousness": 10, "rapid heartbeat": 8,
+    "severe allergic reaction": 9, "anaphylaxis": 10, "seizures": 10, "sudden vision loss": 9,
     
     # Dengue specific symptoms
-    "high fever with sudden onset": 8, "severe headache": 7, "pain behind eyes": 8, "severe muscle pain": 7,
+    "high fever": 8, "severe headache": 7, "pain behind eyes": 8, "severe muscle pain": 7,
     "severe joint pain": 7, "skin rash": 6, "mild bleeding": 7, "low platelet count": 8,
     "easy bruising": 7, "petechiae": 8, "red spots on skin": 6, "increased thirst": 5,
+    # New dengue-specific symptoms
+    "abdominal tenderness": 7, "persistent nausea": 6, "mucous membrane bleeding": 8,
+    "low white blood cell count": 7, "severe fatigue with fever": 7, "sudden fever onset": 8,
     
     # Chikungunya specific symptoms
     "high fever with abrupt onset": 7, "debilitating joint pain": 9, "joint swelling": 7, "maculopapular rash": 6,
     "conjunctival injection": 6, "nausea": 5, "fatigue": 5, "severe joint stiffness": 7,
     "symmetric joint involvement": 6, "joint redness": 5, "morning joint stiffness": 6,
+    # New chikungunya-specific symptoms
+    "persistent joint discomfort": 7, "bilateral joint pain": 6, "prolonged joint stiffness": 7,
+    "severe myalgia": 7, "red swollen joints": 6, "chronic joint pain": 6,
     
     # Medium urgency symptoms
     "high fever": 7, "severe body aches": 7, "persistent cough": 6, "extreme fatigue": 6,
     "widespread rash": 6, "eye pain": 6, "nausea": 6, "vomiting": 6, "diarrhea": 5,
     "loss of appetite": 4, "swollen lymph nodes": 6, "ear pain": 5, "sinus pressure": 4,
+    # New medium urgency symptoms
+    "moderate abdominal pain": 6, "recurrent vomiting": 6, "persistent diarrhea": 6,
+    "mild shortness of breath": 6, "chest discomfort": 6, "moderate headache": 5,
+    "frequent nosebleeds": 6, "mild dehydration": 6, "persistent sore throat": 5,
+    "muscle cramps": 5, "joint discomfort": 5, "skin itching with rash": 5,
     
     # Low urgency symptoms
     "mild fever": 4, "slight runny nose": 2, "occasional sneezing": 2, "mild headache": 3,
     "joint pain": 5, "rash": 5, "mild muscle pain": 3, "runny nose": 3, "body aches": 4,
     "cough": 4, "sore throat": 4, "changing mole": 5, "new skin growth": 5, "severe acne": 4,
     "headache": 4, "migraine": 5, "head pain": 4, "throbbing head": 4, "mild fatigue": 3,
-    "occasional cough": 3, "tiredness": 3, "mild sore throat": 3, "nasal congestion": 3
+    "occasional cough": 3, "tiredness": 3, "mild sore throat": 3,"System: congestion": 3,
+    
+    # New low urgency symptoms
+    "slight cough": 2, "mild nasal congestion": 2, "occasional headache": 3,
+    "slight sore throat": 3, "mild body aches": 3, "slight fatigue": 3,
+    "mild nausea": 4, "occasional diarrhea": 4, "mild rash": 4,
+    "slight joint pain": 4, "mild skin irritation": 3, "occasional dizziness": 4,
+    "mild eye irritation": 3, "slight muscle soreness": 3, "mild thirst": 3
 }
 
 # Symptom mapping for normalization - EXPANDED
 symptom_mapping = {
-    "fever": ["fever", "temperature", "hot", "burning up", "have a temp", "running a fever", "feeling feverish"],
-    "high fever": ["high fever", "very hot", "102 fever", "103 fever", "104 fever", "105 fever", "spiking fever", "very high temperature"],
-    "mild fever": ["mild fever", "slight fever", "low grade fever", "99 fever", "100 fever", "101 fever", "low-grade temperature"],
-    "headache": ["headache", "head pain", "head hurting", "head ache", "head throbbing"],
-    "severe headache": ["severe headache", "bad headache", "worst headache", "excruciating headache", "debilitating headache", "unbearable headache"],
-    "mild headache": ["mild headache", "slight headache", "minor headache", "small headache"],
-    "cough": ["cough", "coughing", "hacking", "hacking cough", "coughing fit"],
-    "persistent cough": ["persistent cough", "constant cough", "nonstop coughing", "continuous cough", "won't stop coughing"],
-    "runny nose": ["runny nose", "nose running", "rhinorrhea", "dripping nose", "nasal discharge"],
-    "sore throat": ["sore throat", "throat pain", "throat hurting", "painful throat", "scratchy throat", "irritated throat"],
-    "body aches": ["body aches", "muscle aches", "aching body", "body pains", "generalized ache", "whole body hurts"],
-    "muscle pain": ["muscle pain", "myalgia", "muscles hurting", "sore muscles", "muscle soreness", "aching muscles"],
-    "joint pain": ["joint pain", "aching joints", "joints hurting", "sore joints", "arthralgia", "joint discomfort"],
-    "severe joint pain": ["severe joint pain", "bad joint pain", "joints very painful", "excruciating joint pain", "debilitating joint pain"],
-    "rash": ["rash", "skin rash", "red spots", "skin irritation", "skin eruption", "skin redness"],
-    "maculopapular rash": ["maculopapular rash", "bumpy rash", "raised rash", "rash with bumps", "papular rash"],
-    "widespread rash": ["widespread rash", "rash all over", "body rash", "rash covering body", "extensive rash"],
-    "nausea": ["nausea", "queasy", "feeling sick", "sick to stomach", "upset stomach", "feel like vomiting"],
-    "vomiting": ["vomiting", "throwing up", "puking", "emesis", "regurgitating"],
-    "persistent vomiting": ["persistent vomiting", "constant vomiting", "can't stop vomiting", "repeated vomiting", "continuous vomiting"],
-    "abdominal pain": ["abdominal pain", "stomach pain", "belly pain", "tummy ache", "abdominal discomfort"],
-    "severe abdominal pain": ["severe abdominal pain", "bad stomach pain", "extreme abdominal pain", "excruciating stomach pain"],
-    "shortness of breath": ["shortness of breath", "breathing difficulty", "can't catch breath", "labored breathing", "breathlessness"],
-    "chest pain": ["chest pain", "chest hurting", "pain in chest", "chest discomfort", "tightness in chest"],
-    "bleeding gums": ["bleeding gums", "gums bleeding", "blood when brushing", "blood from gums", "gingival bleeding"],
-    "nosebleeds": ["nosebleeds", "nose bleeding", "blood from nose", "epistaxis", "nasal bleeding"],
-    "lethargy": ["lethargy", "extremely tired", "no energy", "profound fatigue", "complete exhaustion", "can't get out of bed"],
-    "confusion": ["confusion", "disorientation", "can't think clearly", "mental fog", "altered mental state"],
-    "pain behind eyes": ["pain behind eyes", "eye socket pain", "retro-orbital pain", "pain behind eyeballs", "deep eye pain"],
-    "conjunctival injection": ["conjunctival injection", "red eyes", "bloodshot eyes", "eye redness", "inflamed eyes"],
-    "joint swelling": ["joint swelling", "swollen joints", "puffy joints", "inflamed joints", "joint inflammation"],
-    "easy bruising": ["easy bruising", "bruising easily", "unexplained bruises", "bruises without injury"],
-    "petechiae": ["petechiae", "pinpoint red spots", "small red dots", "red specks on skin"],
-    "stiff neck": ["stiff neck", "neck stiffness", "can't move neck", "neck rigidity"],
-    "light sensitivity": ["light sensitivity", "sensitive to light", "photophobia", "lights hurt eyes"],
-    "loss of appetite": ["loss of appetite", "not hungry", "no desire to eat", "reduced appetite"],
-    "swollen lymph nodes": ["swollen lymph nodes", "swollen glands", "enlarged lymph nodes", "lumps in neck"],
-    "dehydration": ["dehydration", "dehydrated", "dry mouth", "excessive thirst", "dark urine"]
+    "fever": ["fever", "temperature", "hot", "burning up", "have a temp", "running a fever", "feeling feverish", "got a fever", "having a fever", "body temp high", "fevers", "febrile", "feeling warm all over", "shaking with fever", "temperature's up", "chills with fever", "feverish chills", "hot flashes", "feeling overheated", "body's burning", "temperature spiking", "fever coming on", "really warm", "flushed with fever", "hot and sweaty"],
+    "high fever": ["high fever", "very hot", "102 fever", "103 fever", "104 fever", "105 fever", "spiking fever", "very high temperature", "fever over 102", "extremely high fever", "dangerous fever", "fever spiking high", "temperature soaring", "intense fever", "severe temperature rise", "skyrocketing fever", "blazing fever", "really high temp", "fever out of control", "temperature through the roof", "scorching fever", "fever way too high", "boiling up", "extreme temperature", "high-grade fever"],
+    "mild fever": ["mild fever", "slight fever", "low grade fever", "99 fever", "100 fever", "101 fever", "low-grade temperature", "low fever", "just a bit feverish", "mild temperature", "slight temp", "not too high fever", "low-level fever", "gentle fever", "subtle fever", "just warm", "barely a fever", "touch of fever", "mildly warm", "slight temperature increase", "low-key fever", "not quite a fever", "warmish feeling", "faint fever", "borderline fever"],
+    "headache": ["headache", "head pain", "head hurting", "head ache", "head throbbing", "pounding head", "aching head", "head hurts", "splitting headache", "pressure in head", "migraine-like", "throbbing temples", "pain in my head", "head is killing me", "dull headache", "skull pain", "head pounding", "tension headache", "ache in head", "head discomfort", "pulsing headache", "brain hurts", "head feels heavy", "stabbing head pain", "constant head ache"],
+    "severe headache": ["severe headache", "bad headache", "worst headache", "excruciating headache", "debilitating headache", "unbearable headache", "intense headache", "crushing headache", "headache from hell", "severe head pain", "agonizing headache", "extreme head ache", "throbbing severely", "can't stand the headache", "debilitating head pain", "killer headache", "head-splitting pain", "vicious headache", "brutal head pain", "relentless headache", "excruciating head pressure", "head pain unbearable", "severe throbbing head", "worst head pain ever", "crippling headache"],
+    "mild headache": ["mild headache", "slight headache", "minor headache", "small headache", "light headache", "gentle head pain", "not too bad headache", "subtle head ache", "mild head hurting", "faint headache", "low-level headache", "barely a headache", "slight pressure in head", "minor head discomfort", "easy headache", "just a little headache", "mild head tension", "slight head soreness", "barely noticeable headache", "low-grade head pain", "mild head irritation", "slight throbbing", "gentle head ache", "minor head ache", "faint head pain"],
+    "cough": ["cough", "coughing", "hacking", "hacking cough", "coughing fit", "dry cough", "wet cough", "coughing up", "persistent hack", "cough attack", "whooping cough", "barking cough", "coughing spell", "raspy cough", "irritating cough", "chesty cough", "tickly cough", "cough won't stop", "rough cough", "deep cough", "hacking up a lung", "coughing hard", "throaty cough", "cough spasm", "irritated cough"],
+    "persistent cough": ["persistent cough", "constant cough", "nonstop coughing", "continuous cough", "won't stop coughing", "ongoing cough", "lingering cough", "chronic coughing", "cough that won't go away", "endless cough", "repeated coughing", "cough all the time", "unrelenting cough", "cough day and night", "prolonged cough", "cough keeps going", "never-ending cough", "relentless coughing", "cough won't quit", "ongoing hacking", "stubborn cough", "coughing constantly", "persistent hack", "cough round the clock", "chronic cough"],
+    "runny nose": ["runny nose", "nose running", "rhinorrhea", "dripping nose", "nasal discharge", "stuffy runny nose", "nose dripping", "snotty nose", "constant sniffles", "leaky nose", "runny nostrils", "nasal drip", "nose won't stop running", "watery nose", "sniffling", "snot running", "nose like a faucet", "drippy nose", "constant nose drip", "wet nose", "runny sinuses", "nasal leakage", "sneezing and runny", "flowing nose", "mucus dripping"],
+    "sore throat": ["sore throat", "throat pain", "throat hurting", "painful throat", "scratchy throat", "irritated throat", "raw throat", "throat ache", "hurts to swallow", "throat irritation", "sore in throat", "throat on fire", "itchy throat", "tender throat", "inflamed throat", "scratchy sore throat", "throat feels raw", "pain when swallowing", "throat burning", "sore and scratchy", "irritated throat lining", "throat soreness", "hurts to talk", "rough throat", "swollen throat feeling"],
+    "body aches": ["body aches", "muscle aches", "aching body", "body pains", "generalized ache", "whole body hurts", "all over aches", "body soreness", "aching all over", "general body pain", "full body ache", "widespread aches", "body feeling sore", "aches everywhere", "sore body", "total body soreness", "all-over body pain", "general achiness", "body feels beat up", "whole body aching", "sore all over", "generalized soreness", "body hurts everywhere", "diffuse body pain", "aching limbs and body"],
+    "muscle pain": ["muscle pain", "myalgia", "muscles hurting", "sore muscles", "muscle soreness", "aching muscles", "muscle aches", "pain in muscles", "tender muscles", "muscle discomfort", "cramping muscles", "stiff muscles", "hurting muscles", "muscle tenderness", "deep muscle pain", "muscle cramps", "sore muscle tissue", "aching in muscles", "muscle stiffness", "painful muscles", "muscles feel sore", "muscle tightness", "deep muscle aches", "muscle throbbing", "sore and tight muscles"],
+    "joint pain": ["joint pain", "aching joints", "joints hurting", "sore joints", "arthralgia", "joint discomfort", "pain in joints", "joint aches", "stiff joints", "hurting joints", "joint soreness", "inflamed joints", "tender joints", "joint stiffness", "achy joints", "painful joint movement", "joints ache bad", "sore joint areas", "joint tenderness", "aching in joints", "joint pain and stiffness", "hurts to move joints", "joint irritation", "stiff and sore joints", "joint achiness"],
+    "severe joint pain": ["severe joint pain", "bad joint pain", "joints very painful", "excruciating joint pain", "debilitating joint pain", "intense joint pain", "extreme joint aches", "unbearable joint pain", "severe arthralgia", "agonizing joints", "crippling joint pain", "joints killing me", "severe joint discomfort", "debilitating joint aches", "worst joint pain", "vicious joint pain", "relentless joint pain", "excruciating joint aches", "joints in agony", "severe joint soreness", "intense joint agony", "unbearable joint stiffness", "crippling joint discomfort", "extreme joint throbbing", "joints hurt terribly"],
+    "rash": ["rash", "skin rash", "red spots", "skin irritation", "skin eruption", "skin redness", "itchy rash", "red rash", "bumpy skin", "skin breakout", "rashes", "allergic rash", "red patches", "skin inflammation", "eruption on skin", "itchy red spots", "skin flare-up", "red irritated skin", "rashy skin", "skin blotches", "irritated skin patches", "red skin bumps", "skin breaking out", "itchy skin rash", "red skin eruption"],
+    "maculopapular rash": ["maculopapular rash", "bumpy rash", "raised rash", "rash with bumps", "papular rash", "flat and raised rash", "macules and papules", "spotty bumpy rash", "raised red spots", "bumpy red rash", "papule rash", "macular papular", "rough rash", "textured rash", "elevated rash", "bumpy red patches", "mixed rash", "raised and flat rash", "papules and macules", "bumpy skin eruption", "red bumpy spots", "raised skin rash", "lumpy rash", "maculopapular spots", "textured skin rash"],
+    "widespread rash": ["widespread rash", "rash all over", "body rash", "rash covering body", "extensive rash", "full body rash", "rash everywhere", "all over body rash", "generalized rash", "rash on whole body", "diffuse rash", "body-wide rash", "extensive skin rash", "rash spreading all over", "total body rash", "rash across body", "everywhere rash", "whole-body skin rash", "rash all over skin", "widespread skin eruption", "body covered in rash", "universal rash", "rash on entire body", "total skin rash", "generalized skin breakout"],
+    "nausea": ["nausea", "queasy", "feeling sick", "sick to stomach", "upset stomach", "feel like vomiting", "nauseous", "stomach queasy", "feeling nauseated", "woozy", "stomach upset", "gonna throw up", "sick feeling", "queasiness", "nausea feeling", "feeling queasy", "stomach churning", "nauseated", "sick to my stomach", "feeling off", "stomach feels bad", "queasy stomach", "about to puke", "nausea coming on", "feeling woozy"],
+    "vomiting": ["vomiting", "throwing up", "puking", "emesis", "regurgitating", "barfing", "heaving", "spewing", "upchucking", "vomiting episode", "being sick", "tossing cookies", "retching", "vomit", "projectile vomiting", "throwing up a lot", "puking my guts out", "vomiting hard", "sick vomiting", "gagging and vomiting", "barfing up", "vomiting spells", "chucking up", "vomiting violently", "heaving up"],
+    "persistent vomiting": ["persistent vomiting", "constant vomiting", "can't stop vomiting", "repeated vomiting", "continuous vomiting", "ongoing vomiting", "nonstop puking", "frequent vomiting", "vomiting repeatedly", "uncontrollable vomiting", "vomiting all the time", "lingering vomiting", "chronic vomiting", "vomiting won't stop", "endless throwing up", "vomiting over and over", "relentless puking", "constant throwing up", "vomiting nonstop", "persistent puking", "can't quit vomiting", "throwing up constantly", "ongoing puking", "vomiting keeps going", "unstoppable vomiting"],
+    "abdominal pain": ["abdominal pain", "stomach pain", "belly pain", "tummy ache", "abdominal discomfort", "gut pain", "stomach ache", "pain in abdomen", "belly hurts", "cramping in stomach", "abdominal cramps", "tummy pain", "stomach hurting", "pain in belly", "abdominal ache", "gut ache", "stomach cramps", "belly discomfort", "tummy hurting", "abdominal soreness", "pain in my stomach", "crabby stomach", "aching belly", "stomach twinges", "gut discomfort"],
+    "severe abdominal pain": ["severe abdominal pain", "bad stomach pain", "extreme abdominal pain", "excruciating stomach pain", "intense belly pain", "severe stomach ache", "agonizing abdominal pain", "debilitating gut pain", "unbearable stomach pain", "severe cramps", "worst abdominal pain", "crushing stomach pain", "extreme tummy ache", "severe abdominal discomfort", "intense abdominal cramps", "killer stomach pain", "vicious abdominal pain", "relentless gut pain", "excruciating belly pain", "severe stomach cramps", "agonizing tummy pain", "unbearable abdominal ache", "crippling stomach pain", "extreme gut ache", "stomach pain from hell"],
+    "shortness of breath": ["shortness of breath", "breathing difficulty", "can't catch breath", "labored breathing", "breathlessness", "hard to breathe", "out of breath", "gasping for air", "difficulty breathing", "wheezing", "tight chest breathing", "struggling to breathe", "short winded", "breath coming short", "dyspnea", "can't get enough air", "breathing feels tight", "short of air", "panting", "breathing hard", "gasping", "lungs feel tight", "trouble getting air", "breath catching", "hard to catch breath"],
+    "chest pain": ["chest pain", "chest hurting", "pain in chest", "chest discomfort", "tightness in chest", "chest ache", "pain in the chest", "chest pressure", "sharp chest pain", "dull chest pain", "chest tightness", "hurting in chest", "chest soreness", "aching chest", "stabbing chest pain", "chest feels heavy", "pain across chest", "tight chest pain", "chest throbbing", "sore chest", "burning in chest", "chest pain on breathing", "sharp pain in chest", "constant chest ache", "chest wall pain"],
+    "bleeding gums": ["bleeding gums", "gums bleeding", "blood when brushing", "blood from gums", "gingival bleeding", "gums bleed easily", "bleeding when flossing", "blood in spit", "gums hemorrhaging", "easy gum bleeding", "gums leaking blood", "blood on toothbrush", "swollen bleeding gums", "gum bleed", "oral bleeding", "gums oozing blood", "bleeding when chewing", "gums bleed when brushing", "constant gum bleeding", "blood from mouth", "gums bleeding a lot", "red gums bleeding", "sore and bleeding gums", "gums leaking", "bleeding oral tissue"],
+    "nosebleeds": ["nosebleeds", "nose bleeding", "blood from nose", "epistaxis", "nasal bleeding", "nose bleed", "bleeding nose", "frequent Nosebleeds", "blood dripping from nose", "nose hemorrhaging", "uncontrolled nosebleed", "nose gushing blood", "recurrent nosebleeds", "nose starting to bleed", "bloody nose", "nosebleed episodes", "constant nose bleeding", "nosebleeds all the time", "blood pouring from nose", "frequent nasal bleeding", "nosebleed won't stop", "heavy nosebleed", "nasal hemorrhage", "nose bleeding heavily", "persistent nosebleeds"],
+    "lethargy": ["lethargy", "extremely tired", "no energy", "profound fatigue", "complete exhaustion", "can't get out of bed", "feeling drained", "utterly exhausted", "worn out", "listless", "sluggish", "fatigued", "zero energy", "totally wiped out", "overwhelming tiredness", "bone-tired", "dead tired", "no strength", "completely worn out", "exhausted all the time", "feeling run down", "total lack of energy", "can barely move", "sapped energy", "extreme weariness"],
+    "confusion": ["confusion", "disorientation", "can't think clearly", "mental fog", "altered mental state", "brain fog", "confused state", "disoriented", "fuzzy thinking", "mental confusion", "not thinking straight", "dazed", "bewildered", "mixed up", "cloudy mind", "foggy brain", "can't focus", "mind feels off", "scattered thoughts", "feeling lost", "mental haze", "disoriented thinking", "brain not working", "trouble concentrating", "mind all over the place"],
+    "pain behind eyes": ["pain behind eyes", "eye socket pain", "retro-orbital pain", "pain behind eyeballs", "deep eye pain", "aching behind eyes", "pressure behind eyes", "hurting behind eyes", "orbital pain", "eyeball ache", "pain in eye sockets", "behind the eyes pain", "deep ocular pain", "retroorbital ache", "eyes hurting deep", "eye socket soreness", "pain deep in eyes", "aching eye sockets", "pressure in eyeballs", "hurting behind eyeballs", "retro-orbital discomfort", "deep pain behind eyes", "eye pain deep inside", "sore behind eyes", "throbbing behind eyes"],
+    "conjunctival injection": ["conjunctival injection", "red eyes", "bloodshot eyes", "eye redness", "inflamed eyes", "reddened eyes", "eyes look bloodshot", "pink eyes", "irritated red eyes", "vascular eyes", "conjunctiva red", "eyes injected", "red sclera", "blood vessels in eyes", "eyes turning red", "red irritated eyes", "eyes look inflamed", "sore red eyes", "bloodshot and irritated", "red eyeballs", "eyes burning red", "inflamed eye appearance", "red and sore eyes", "eyes super red", "conjunctival redness"],
+    "joint swelling": ["joint swelling", "swollen joints", "puffy joints", "inflamed joints", "joint inflammation", "joints puffed up", "enlarged joints", "swelling in joints", "joint edema", "bulging joints", "inflamed and swollen joints", "joints getting bigger", "puffy and sore joints", "joint puffiness", "swollen and painful joints", "joints swollen up", "big swollen joints", "joint bloating", "swollen joint areas", "puffy joint swelling", "inflamed joint tissue", "joints looking swollen", "swollen and stiff joints", "joint enlargement", "painful joint swelling"],
+    "easy bruising": ["easy bruising", "bruising easily", "unexplained bruises", "bruises without injury", "prone to bruising", "bruises appearing", "easy to bruise", "mysterious bruises", "bruising for no reason", "skin bruises easily", "frequent bruising", "unusual bruising", "bruises show up easily", "minimal trauma bruising", "spontaneous bruising", "bruises popping up", "easy skin bruising", "bruising with no cause", "random bruises", "bruises from nothing", "skin marks easily", "frequent unexplained bruises", "bruising too easily", "bruises all over", "sensitive to bruising"],
+    "petechiae": ["petechiae", "pinpoint red spots", "small red dots", "red specks on skin", "tiny red spots", "petechial rash", "red pinpoints", "small hemorrhages", "red dots on skin", "speckled red spots", "pinhead red spots", "tiny blood spots", "red freckles", "small purple spots", "capillary breaks", "tiny red marks", "red speckles", "small blood dots", "petechial spots", "red pinpricks", "tiny hemorrhagic spots", "red skin specks", "small red blemishes", "pinpoint hemorrhages", "red dots under skin"],
+    "stiff neck": ["stiff neck", "neck stiffness", "can't move neck", "neck rigidity", "sore stiff neck", "neck won't bend", "rigid neck", "neck pain and stiffness", "locked neck", "neck frozen", "difficulty turning neck", "neck muscle stiffness", "stiff and painful neck", "neck inflexibility", "tense neck", "neck won't move", "stiff neck muscles", "neck locked up", "hard to turn neck", "neck feels tight", "rigid and sore neck", "neck stuck", "painful neck stiffness", "neck won't rotate", "stiff neck and sore"],
+    "light sensitivity": ["light sensitivity", "sensitive to light", "photophobia", "lights hurt eyes", "bright lights bother me", "eyes sensitive to light", "can't stand bright lights", "light intolerance", "glare sensitivity", "eyes hurt in light", "photophobic", "squinting in light", "light makes eyes ache", "aversion to light", "bright light pain", "eyes can't handle light", "light bothers eyes", "sensitive to bright light", "lights too bright", "eyes hurt with light", "glare hurts eyes", "light sensitivity in eyes", "bright light discomfort", "eyes squinting in light", "painful light exposure"],
+    "loss of appetite": ["loss of appetite", "not hungry", "no desire to eat", "reduced appetite", "appetite gone", "no interest in food", "lack of hunger", "anorexia", "don't feel like eating", "appetite loss", "zero appetite", "food aversion", "not eating much", "decreased hunger", "poor appetite", "no urge to eat", "food doesn't appeal", "can't eat", "hunger gone", "not wanting food", "appetite really low", "no taste for food", "eating feels off", "no craving for food", "feeling full without eating"],
+    "swollen lymph nodes": ["swollen lymph nodes", "swollen glands", "enlarged lymph nodes", "lumps in neck", "swollen nodes", "lymph node swelling", "glands puffed up", "tender swollen glands", "neck lumps", "enlarged glands", "swollen lymphs", "lymphadenopathy", "bulging lymph nodes", "swollen under jaw", "painful swollen nodes", "lumpy glands", "swollen neck glands", "big lymph nodes", "tender lymph nodes", "swollen lumps in neck", "glands feel big", "lymph node enlargement", "swollen and sore glands", "puffy lymph nodes", "neck glands swollen"],
+    "dehydration": ["dehydration", "dehydrated", "dry mouth", "excessive thirst", "dark urine", "feeling thirsty all the time", "dry skin", "lack of fluids", "thirsty and dry", "dehydrated feeling", "not enough water", "sunken eyes", "dry lips", "thirstiness", "fluid loss", "parched", "really thirsty", "feeling dried out", "low hydration", "thirsty constantly", "dry and thirsty", "no moisture in mouth", "dehydration symptoms", "craving water", "body feels dry"]
 }
 
 # Dengue-prone areas in Bangladesh (2025)
@@ -211,7 +233,7 @@ medical_data = [
         "condition": "Dengue Fever"
     },
     {
-        "symptoms": ["high fever with sudden onset", "severe headache", "pain behind eyes", "severe muscle pain", "vomiting"],
+        "symptoms": ["high fever ", "severe headache", "pain behind eyes", "severe muscle pain", "vomiting"],
         "specialty": "Infectious Disease",
         "suggested_action": "Seek medical attention within 24 hours. You may need blood tests and close monitoring.",
         "urgency": "Intermediate",

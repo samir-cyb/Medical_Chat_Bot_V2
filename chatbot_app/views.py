@@ -170,17 +170,17 @@ def send_message(request):
         user_message = data.get('message', '').strip()
         session_id = data.get('session_id', '')
         
-        print(f"🔍 Received message: '{user_message}' for session: {session_id}")
+        #print(f"🔍 Received message: '{user_message}' for session: {session_id}")
         
         if not user_message or not session_id:
-            print("❌ Invalid request - missing message or session_id")
+          #  print("❌ Invalid request - missing message or session_id")
             return JsonResponse({'error': 'Invalid request'}, status=400)
         
         try:
             chat_session = ChatSession.objects.get(session_id=session_id)
-            print(f"✅ Found chat session: {session_id}")
+          #  print(f"✅ Found chat session: {session_id}")
         except ChatSession.DoesNotExist:
-            print(f"❌ Session not found: {session_id}")
+          #  print(f"❌ Session not found: {session_id}")
             return JsonResponse({'error': 'Session not found'}, status=404)
         
         # Save user message
@@ -189,13 +189,13 @@ def send_message(request):
             message=user_message,
             is_bot=False
         )
-        print(f"💾 Saved user message: {user_message[:50]}...")
+        #print(f"💾 Saved user message: {user_message[:50]}...")
         
         # Get bot response
         chatbot = get_chatbot()
         if chatbot is None:
             error_msg = "Chatbot is not available. Please try again later."
-            print("❌ Chatbot is None")
+            #print("❌ Chatbot is None")
             bot_msg = ChatMessage.objects.create(
                 session=chat_session,
                 message=error_msg,
@@ -207,45 +207,45 @@ def send_message(request):
                 'should_continue': False
             })
         
-        print("🤖 Processing message with chatbot...")
+        #print("🤖 Processing message with chatbot...")
         try:
             # Determine query type first
-            print(f"🔍 Determining query type for: '{user_message}'")
+            #print(f"🔍 Determining query type for: '{user_message}'")
             query_type = chatbot.get_query_type(user_message)
-            print(f"✅ Query type: {query_type}")
+            #print(f"✅ Query type: {query_type}")
             
             if query_type == 'informational':
-                print("📚 Handling informational question")
+                #print("📚 Handling informational question")
                 bot_response = chatbot.get_informational_response(user_message)
                 should_continue = False
                 
             elif query_type == 'medical':
-                print("🏥 Handling medical query")
+                #print("🏥 Handling medical query")
                 bot_response, should_continue = chatbot.process_medical_query(user_message)
                 
             elif query_type in ['greeting', 'casual']:
-                print("👋 Handling casual conversation")
+                #print("👋 Handling casual conversation")
                 bot_response = chatbot.get_casual_response(user_message)
                 should_continue = False
                 
             elif query_type == 'exit':
-                print("👋 Handling exit command")
+                #print("👋 Handling exit command")
                 bot_response = "Thank you for chatting. Please take care of your health!"
                 should_continue = False
                 
             else:
-                print("❓ Handling unknown query type")
+               # print("❓ Handling unknown query type")
                 bot_response = "I'm here to help with medical concerns. Please describe any symptoms or health issues you're experiencing."
                 should_continue = False
                 
-            print(f"✅ Bot response generated: {bot_response[:100]}...")
-            print(f"✅ Should continue: {should_continue}")
+           # print(f"✅ Bot response generated: {bot_response[:100]}...")
+           # print(f"✅ Should continue: {should_continue}")
             
         except Exception as e:
             error_msg = f"Error processing your message: {str(e)}"
             bot_response = error_msg
             should_continue = False
-            print(f"❌ Error in message processing: {e}")
+          #  print(f"❌ Error in message processing: {e}")
             import traceback
             traceback.print_exc()
         
@@ -268,7 +268,7 @@ def send_message(request):
         })
         
     except Exception as e:
-        print(f"❌ Unexpected error in send_message: {e}")
+       # print(f"❌ Unexpected error in send_message: {e}")
         import traceback
         traceback.print_exc()
         return JsonResponse({'error': 'Internal server error'}, status=500)
@@ -276,7 +276,7 @@ def send_message(request):
 @csrf_exempt
 @require_http_methods(["POST"])
 def clear_chat(request):
-    print("🗑️ clear_chat endpoint called")
+   # print("🗑️ clear_chat endpoint called")
     session_id = request.session.get('chat_session_id')
     if session_id:
         try:
