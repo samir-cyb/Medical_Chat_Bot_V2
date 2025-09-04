@@ -440,22 +440,44 @@ class MedicalChatBot:
             if re.search(r'\b' + re.escape(symptom) + r'\b', user_input_lower):
                 found_symptoms.add(symptom)
                 #print(f"✅ [extract_symptoms] Direct match: '{symptom}'")
-                
+
         # Extract fever temperature if mentioned
-        fever_match = re.search(r'(\d{2,3}(?:\.\d{1,2})?)\s*(degrees|°|fahrenheit|f|celcius|c|degree|deg|temp|temperature)?', user_input_lower)
-        if fever_match:
+        temp_match = re.search(r'(\d{2,3}(?:\.\d{1,2})?)\s*(degrees|°|fahrenheit|f|celcius|c|degree|deg|temp|temperature)?', user_input_lower)
+        if temp_match:
+            try:
+                temp = float(temp_match.group(1))
+                self.user_info["fever_temperature"] = temp
+                
+                # Remove any fever symptoms from current extraction (to prevent duplicates)
+                for fever_symptom in ["fever", "high fever", "mild fever"]:
+                    if fever_symptom in found_symptoms:
+                        found_symptoms.remove(fever_symptom)
+                        
+                # Add appropriate fever symptom based on temperature
+                if temp >= 102:
+                    found_symptoms.add("high fever")
+                elif temp >= 100.4 and temp < 102:
+                    found_symptoms.add("fever")
+                else:
+                    found_symptoms.add("mild fever")
+                    
+                print(f"✅ [extract_symptoms] Temperature-based fever symptom: {list(found_symptoms)}")
+                
+                # NOW remove the old fever symptoms from user_symptoms since we have temperature
+                # This prevents duplicates but only AFTER we have the temperature info
+                for fever_symptom in ["fever", "high fever", "mild fever"]:
+                    if fever_symptom in self.user_symptoms:
+                        self.user_symptoms.remove(fever_symptom)
+                        
+            except ValueError:
+                pass
+        
+        # comment out for finding better contitions
+        """if fever_match:
             try:
                 temp = float(fever_match.group(1))
                 self.user_info["fever_temperature"] = temp
-                
-                """if "fever" in found_symptoms:
-                    found_symptoms.remove("fever")
-                if "high fever" in found_symptoms:
-                    found_symptoms.remove("high fever")
-                if "mild fever" in found_symptoms:
-                    found_symptoms.remove("mild fever")"""
                 print(f"✅ [extract_symptoms] Extracted temperature: {temp}°F")
-                
                 if temp >= 102:
                     found_symptoms.add("high fever")
                 elif temp >= 100.4:  # Standard fever threshold
@@ -463,7 +485,7 @@ class MedicalChatBot:
                 else:
                     found_symptoms.add("mild fever")
             except ValueError:
-                pass  # Handle invalid temperature format
+                pass  # Handle invalid temperature format"""
         
         # Extract fever duration if mentioned
         duration_match = re.search(r'(\d+)\s*(day|days|hour|hours|week|weeks)', user_input_lower)
@@ -485,7 +507,7 @@ class MedicalChatBot:
                 
         # Extract pain location if mentioned
         pain_locations = {
-            "eyes": ["eyes", "eye", "behind eyes", "ocular", "retro-orbital"],
+            "eyes": ["eyes", "eye", "behind eyes", "ocular", "retro-orbital","behind my eyes"],
             "chest": ["chest", "breast", "sternum"],
             "abdomen": ["abdomen", "stomach", "belly", "tummy"],
             "head": ["head", "headache", "migraine", "cranial"],
@@ -508,7 +530,9 @@ class MedicalChatBot:
         elif any(term in user_input_lower for term in ["mild pain", "slight pain", "minor pain", "1/10", "2/10", "3/10", "4/10"]):
             self.user_info["pain_severity"] = "mild"
             
-        if not pain_scale_match:  # Only extract temperature if it's not a pain scale response
+            
+            # comment out for dublicate function
+        """if not pain_scale_match:  # Only extract temperature if it's not a pain scale response
             fever_match = re.search(r'(\d{2,3}(?:\.\d{1,2})?)\s*(degrees|°|fahrenheit|f|celcius|c|degree|deg|temp|temperature)', user_input_lower)
             if fever_match:
                 try:
@@ -521,7 +545,7 @@ class MedicalChatBot:
                         found_symptoms.add("mild fever")
                 #    print(f"✅ [extract_symptoms] Extracted temperature: {temp}°F")
                 except ValueError:
-                    pass
+                    pass"""
         
         if "high fever" in found_symptoms and "fever" in found_symptoms:
             found_symptoms.remove("fever")
@@ -543,7 +567,7 @@ class MedicalChatBot:
     
         
         print(f"🔍 [calculate_symptom_score] User symptoms: {user_symptoms}")
-        print(f"🔍 [calculate_symptom_score] Condition symptoms: {condition_symptoms}")
+        print(f"🔍 [calculate_symptom_score] Condition symptoms: {condition_symptoms}\n\n")
         
         # Normalize all symptoms by stripping whitespace
         user_symptoms = [s.strip().lower() for s in user_symptoms]
