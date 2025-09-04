@@ -60,6 +60,7 @@ def create_vector_database():
             f"Urgency: {entry['urgency']}. "
             f"First Aid: {entry.get('first_aid', 'Not specified')}. "
             f"Follow-up Questions: {follow_up_questions_str}. "
+            f"Condition: {entry.get('condition', 'Not specified')}. "
         )
         
         # Add stage and condition information if available
@@ -78,7 +79,7 @@ def create_vector_database():
             "urgency": entry['urgency'],
             "first_aid": entry.get('first_aid', 'Not specified'),
             "follow_up_questions": follow_up_questions_str,
-            "stage": entry.get('stage', 'Not specified'),
+            #"stage": entry.get('stage', 'Not specified'),
             "condition": entry.get('condition', 'Not specified'),
             "symptom_weight_score": condition_weights
         })

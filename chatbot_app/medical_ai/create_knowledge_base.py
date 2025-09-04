@@ -34,7 +34,7 @@ symptom_weights = {
     
     # Medium urgency symptoms
     "high fever": 7, "severe body aches": 7, "persistent cough": 6, "extreme fatigue": 6,
-    "widespread rash": 6, "eye pain": 6, "nausea": 6, "vomiting": 6, "diarrhea": 5,
+    "rash": 6, "eye pain": 6, "nausea": 6, "vomiting": 6, "diarrhea": 5,
     "loss of appetite": 4, "swollen lymph nodes": 6, "ear pain": 5, "sinus pressure": 4,
     # New medium urgency symptoms
     "moderate abdominal pain": 6, "recurrent vomiting": 6, "persistent diarrhea": 6,
@@ -73,9 +73,20 @@ symptom_mapping = {
     "muscle pain": ["muscle pain", "myalgia", "muscles hurting", "sore muscles", "muscle soreness", "aching muscles", "muscle aches", "pain in muscles", "tender muscles", "muscle discomfort", "cramping muscles", "stiff muscles", "hurting muscles", "muscle tenderness", "deep muscle pain", "muscle cramps", "sore muscle tissue", "aching in muscles", "muscle stiffness", "painful muscles", "muscles feel sore", "muscle tightness", "deep muscle aches", "muscle throbbing", "sore and tight muscles"],
     "joint pain": ["joint pain", "aching joints", "joints hurting", "sore joints", "arthralgia", "joint discomfort", "pain in joints", "joint aches", "stiff joints", "hurting joints", "joint soreness", "inflamed joints", "tender joints", "joint stiffness", "achy joints", "painful joint movement", "joints ache bad", "sore joint areas", "joint tenderness", "aching in joints", "joint pain and stiffness", "hurts to move joints", "joint irritation", "stiff and sore joints", "joint achiness"],
     "severe joint pain": ["severe joint pain", "bad joint pain", "joints very painful", "excruciating joint pain", "debilitating joint pain", "intense joint pain", "extreme joint aches", "unbearable joint pain", "severe arthralgia", "agonizing joints", "crippling joint pain", "joints killing me", "severe joint discomfort", "debilitating joint aches", "worst joint pain", "vicious joint pain", "relentless joint pain", "excruciating joint aches", "joints in agony", "severe joint soreness", "intense joint agony", "unbearable joint stiffness", "crippling joint discomfort", "extreme joint throbbing", "joints hurt terribly"],
-    "rash": ["rash", "skin rash", "red spots", "skin irritation", "skin eruption", "skin redness", "itchy rash", "red rash", "bumpy skin", "skin breakout", "rashes", "allergic rash", "red patches", "skin inflammation", "eruption on skin", "itchy red spots", "skin flare-up", "red irritated skin", "rashy skin", "skin blotches", "irritated skin patches", "red skin bumps", "skin breaking out", "itchy skin rash", "red skin eruption"],
-    "maculopapular rash": ["maculopapular rash", "bumpy rash", "raised rash", "rash with bumps", "papular rash", "flat and raised rash", "macules and papules", "spotty bumpy rash", "raised red spots", "bumpy red rash", "papule rash", "macular papular", "rough rash", "textured rash", "elevated rash", "bumpy red patches", "mixed rash", "raised and flat rash", "papules and macules", "bumpy skin eruption", "red bumpy spots", "raised skin rash", "lumpy rash", "maculopapular spots", "textured skin rash"],
-    "widespread rash": ["widespread rash", "rash all over", "body rash", "rash covering body", "extensive rash", "full body rash", "rash everywhere", "all over body rash", "generalized rash", "rash on whole body", "diffuse rash", "body-wide rash", "extensive skin rash", "rash spreading all over", "total body rash", "rash across body", "everywhere rash", "whole-body skin rash", "rash all over skin", "widespread skin eruption", "body covered in rash", "universal rash", "rash on entire body", "total skin rash", "generalized skin breakout"],
+    "rash": [
+    "rash", "skin rash", "red spots", "skin irritation", "skin eruption", "skin redness", 
+    "itchy rash", "red rash", "bumpy skin", "skin breakout", "rashes", "allergic rash", 
+    "red patches", "skin inflammation", "eruption on skin", "itchy red spots", "skin flare-up", 
+    "red irritated skin", "rashy skin", "skin blotches", "irritated skin patches", 
+    "red skin bumps", "skin breaking out", "itchy skin rash", "red skin eruption",
+    # ADD the widespread rash terms here:
+    "widespread rash", "rash all over", "body rash", "rash covering body", "extensive rash", 
+    "full body rash", "rash everywhere", "all over body rash", "generalized rash", 
+    "rash on whole body", "diffuse rash", "body-wide rash", "extensive skin rash", 
+    "rash spreading all over", "total body rash", "rash across body", "everywhere rash", 
+    "whole-body skin rash", "rash all over skin", "widespread skin eruption", 
+    "body covered in rash", "universal rash", "rash on entire body", "total skin rash", 
+    "generalized skin breakout"],    
     "nausea": ["nausea", "queasy", "feeling sick", "sick to stomach", "upset stomach", "feel like vomiting", "nauseous", "stomach queasy", "feeling nauseated", "woozy", "stomach upset", "gonna throw up", "sick feeling", "queasiness", "nausea feeling", "feeling queasy", "stomach churning", "nauseated", "sick to my stomach", "feeling off", "stomach feels bad", "queasy stomach", "about to puke", "nausea coming on", "feeling woozy"],
     "vomiting": ["vomiting", "throwing up", "puking", "emesis", "regurgitating", "barfing", "heaving", "spewing", "upchucking", "vomiting episode", "being sick", "tossing cookies", "retching", "vomit", "projectile vomiting", "throwing up a lot", "puking my guts out", "vomiting hard", "sick vomiting", "gagging and vomiting", "barfing up", "vomiting spells", "chucking up", "vomiting violently", "heaving up"],
     "persistent vomiting": ["persistent vomiting", "constant vomiting", "can't stop vomiting", "repeated vomiting", "continuous vomiting", "ongoing vomiting", "nonstop puking", "frequent vomiting", "vomiting repeatedly", "uncontrollable vomiting", "vomiting all the time", "lingering vomiting", "chronic vomiting", "vomiting won't stop", "endless throwing up", "vomiting over and over", "relentless puking", "constant throwing up", "vomiting nonstop", "persistent puking", "can't quit vomiting", "throwing up constantly", "ongoing puking", "vomiting keeps going", "unstoppable vomiting"],
@@ -83,7 +94,7 @@ symptom_mapping = {
     "severe abdominal pain": ["severe abdominal pain", "bad stomach pain", "extreme abdominal pain", "excruciating stomach pain", "intense belly pain", "severe stomach ache", "agonizing abdominal pain", "debilitating gut pain", "unbearable stomach pain", "severe cramps", "worst abdominal pain", "crushing stomach pain", "extreme tummy ache", "severe abdominal discomfort", "intense abdominal cramps", "killer stomach pain", "vicious abdominal pain", "relentless gut pain", "excruciating belly pain", "severe stomach cramps", "agonizing tummy pain", "unbearable abdominal ache", "crippling stomach pain", "extreme gut ache", "stomach pain from hell"],
     "shortness of breath": ["shortness of breath", "breathing difficulty", "can't catch breath", "labored breathing", "breathlessness", "hard to breathe", "out of breath", "gasping for air", "difficulty breathing", "wheezing", "tight chest breathing", "struggling to breathe", "short winded", "breath coming short", "dyspnea", "can't get enough air", "breathing feels tight", "short of air", "panting", "breathing hard", "gasping", "lungs feel tight", "trouble getting air", "breath catching", "hard to catch breath"],
     "chest pain": ["chest pain", "chest hurting", "pain in chest", "chest discomfort", "tightness in chest", "chest ache", "pain in the chest", "chest pressure", "sharp chest pain", "dull chest pain", "chest tightness", "hurting in chest", "chest soreness", "aching chest", "stabbing chest pain", "chest feels heavy", "pain across chest", "tight chest pain", "chest throbbing", "sore chest", "burning in chest", "chest pain on breathing", "sharp pain in chest", "constant chest ache", "chest wall pain"],
-    "bleeding gums": ["bleeding gums", "gums bleeding", "blood when brushing", "blood from gums", "gingival bleeding", "gums bleed easily", "bleeding when flossing", "blood in spit", "gums hemorrhaging", "easy gum bleeding", "gums leaking blood", "blood on toothbrush", "swollen bleeding gums", "gum bleed", "oral bleeding", "gums oozing blood", "bleeding when chewing", "gums bleed when brushing", "constant gum bleeding", "blood from mouth", "gums bleeding a lot", "red gums bleeding", "sore and bleeding gums", "gums leaking", "bleeding oral tissue"],
+    "bleeding": ["bleeding gums", "gums bleeding", "blood when brushing", "blood from gums", "gingival bleeding", "gums bleed easily", "bleeding when flossing", "blood in spit", "gums hemorrhaging", "easy gum bleeding", "gums leaking blood", "blood on toothbrush", "swollen bleeding gums", "gum bleed", "oral bleeding", "gums oozing blood", "bleeding when chewing", "gums bleed when brushing", "constant gum bleeding", "blood from mouth", "gums bleeding a lot", "red gums bleeding", "sore and bleeding gums", "gums leaking", "bleeding oral tissue"],
     "nosebleeds": ["nosebleeds", "nose bleeding", "blood from nose", "epistaxis", "nasal bleeding", "nose bleed", "bleeding nose", "frequent Nosebleeds", "blood dripping from nose", "nose hemorrhaging", "uncontrolled nosebleed", "nose gushing blood", "recurrent nosebleeds", "nose starting to bleed", "bloody nose", "nosebleed episodes", "constant nose bleeding", "nosebleeds all the time", "blood pouring from nose", "frequent nasal bleeding", "nosebleed won't stop", "heavy nosebleed", "nasal hemorrhage", "nose bleeding heavily", "persistent nosebleeds"],
     "lethargy": ["lethargy", "extremely tired", "no energy", "profound fatigue", "complete exhaustion", "can't get out of bed", "feeling drained", "utterly exhausted", "worn out", "listless", "sluggish", "fatigued", "zero energy", "totally wiped out", "overwhelming tiredness", "bone-tired", "dead tired", "no strength", "completely worn out", "exhausted all the time", "feeling run down", "total lack of energy", "can barely move", "sapped energy", "extreme weariness"],
     "confusion": ["confusion", "disorientation", "can't think clearly", "mental fog", "altered mental state", "brain fog", "confused state", "disoriented", "fuzzy thinking", "mental confusion", "not thinking straight", "dazed", "bewildered", "mixed up", "cloudy mind", "foggy brain", "can't focus", "mind feels off", "scattered thoughts", "feeling lost", "mental haze", "disoriented thinking", "brain not working", "trouble concentrating", "mind all over the place"],
@@ -145,7 +156,7 @@ medical_data = [
         "condition": "Skin Condition"
     },
     {
-        "symptoms": ["fever", "cough", "sore throat", "runny nose", "body aches"],
+        "symptoms": ["fever", "cough", "sore throat", "runny nose", "body aches", "mild fever", "slight runny nose", "occasional sneezing", "mild headache"],
         "specialty": "Primary Care / General Practice",
         "suggested_action": "Schedule an appointment with your primary care doctor or visit an Urgent Care clinic for evaluation. Rest and hydrate.",
         "urgency": "Routine",
@@ -163,93 +174,30 @@ medical_data = [
         "condition": "Headache"
     },
     {
-        "symptoms": ["mild fever", "slight runny nose", "occasional sneezing", "mild headache"],
-        "specialty": "Primary Care / General Practice",
-        "suggested_action": "Rest at home, drink plenty of fluids, and take over-the-counter cold medicine if needed. Monitor your symptoms.",
-        "urgency": "Normal",
-        "first_aid": "Get plenty of rest, drink warm fluids like tea with honey, use a humidifier, and take over-the-counter cold medicine.",
-        "follow_up_questions": ["How long have you had these symptoms?", "Is your fever above 100.4°F (38°C)?", "Are you experiencing any body aches?"],
-        "stage": "Normal Stage",
-        "condition": "Common Cold"
-    },
-    {
-        "symptoms": ["high fever", "severe body aches", "persistent cough", "extreme fatigue"],
-        "specialty": "Primary Care / General Practice",
-        "suggested_action": "Schedule an appointment with your doctor today. You may need antiviral medication if diagnosed early.",
-        "urgency": "Intermediate",
-        "first_aid": "Rest, stay hydrated, take fever reducers like acetaminophen or ibuprofen, and use a warm compress for body aches.",
+        "symptoms": ["high fever", "severe body aches", "persistent cough", "extreme fatigue", "very high fever", "difficulty breathing", "chest pain", "severe dehydration", "confusion"],
+        "specialty": "Primary Care / Emergency Medicine",
+        "suggested_action": "Seek medical attention. For severe symptoms, go to emergency care immediately.",
+        "urgency": "Intermediate to Dangerous",
+        "first_aid": "Rest, stay hydrated, take fever reducers. For severe symptoms, seek emergency care immediately.",
         "follow_up_questions": ["How high is your fever?", "Are you having difficulty breathing?", "Do you have any underlying health conditions?"],
-        "stage": "Intermediate Stage",
-        "condition": "Influenza (Flu)"
+        "condition": "Influenza (Flu) or Severe Respiratory Infection"
     },
     {
-        "symptoms": ["very high fever", "difficulty breathing", "chest pain", "severe dehydration", "confusion"],
-        "specialty": "Emergency Medicine",
-        "suggested_action": "Seek emergency medical care immediately. These symptoms could indicate a serious complication.",
-        "urgency": "Dangerous",
-        "first_aid": "While waiting for emergency care, try to keep the person hydrated with small sips of water and use cool compresses to reduce fever.",
-        "follow_up_questions": ["When did the breathing difficulties start?", "Is the person able to speak in full sentences?", "What is their current temperature?"],
-        "stage": "Dangerous Stage",
-        "condition": "Severe Respiratory Infection"
-    },
-    {
-        "symptoms": ["mild fever", "joint pain", "rash", "headache", "mild muscle pain"],
-        "specialty": "Infectious Disease / Primary Care",
-        "suggested_action": "Schedule an appointment with your doctor for evaluation. Rest and take acetaminophen for pain and fever.",
-        "urgency": "Normal",
-        "first_aid": "Rest, stay hydrated, take pain relievers for joint discomfort, and use calamine lotion for rash relief.",
-        "follow_up_questions": ["When did the symptoms start?", "Have you traveled to areas with known Chikungunya outbreaks?", "Is the rash spreading?"],
-        "stage": "Normal Stage",
-        "condition": "Chikungunya Fever"
-    },
-    {
-        "symptoms": ["high fever", "severe joint pain", "widespread rash", "eye pain", "nausea"],
+        "symptoms": ["fever", "joint pain", "rash", "headache", "muscle pain", "high fever", "severe joint pain", "eye pain", "nausea", "persistent high fever", "severe dehydration", "severe abdominal pain"],
         "specialty": "Infectious Disease",
-        "suggested_action": "Seek medical attention within 24 hours. You may need specific testing and management.",
-        "urgency": "Intermediate",
-        "first_aid": "Rest in a cool environment, stay well-hydrated, take pain medication as directed, and use cool compresses for fever.",
-        "follow_up_questions": ["How severe is the joint pain?", "Are you able to move your joints comfortably?", "Have you noticed any bleeding?"],
-        "stage": "Intermediate Stage",
+        "suggested_action": "Seek medical attention. For severe symptoms with bleeding or dehydration, go to emergency room immediately.",
+        "urgency": "Normal to Dangerous",
+        "first_aid": "Rest, stay hydrated, take pain relievers for joint discomfort. Do not give aspirin or NSAIDs if bleeding is present.",
+        "follow_up_questions": ["When did the symptoms start?", "Have you traveled to areas with known outbreaks?","have you any joint pain or muscle pain?"],
         "condition": "Chikungunya Fever"
     },
     {
-        "symptoms": ["persistent high fever", "severe dehydration", "bleeding gums", "nosebleeds", "severe abdominal pain"],
-        "specialty": "Emergency Medicine / Infectious Disease",
-        "suggested_action": "Go to the emergency room immediately. This could indicate severe Chikungunya complications.",
-        "urgency": "Dangerous",
-        "first_aid": "While waiting for emergency care, keep the person lying down with elevated legs if showing signs of shock. Do not give aspirin or NSAIDs.",
-        "follow_up_questions": ["Is there any visible bleeding?", "How long has the fever persisted?", "Is the person conscious and responsive?"],
-        "stage": "Dangerous Stage",
-        "condition": "Chikungunya Fever"
-    },
-    {
-        "symptoms": ["mild fever", "headache", "mild body aches", "rash"],
-        "specialty": "Infectious Disease / Primary Care",
-        "suggested_action": "Schedule a doctor's appointment for evaluation. Monitor for any warning signs.",
-        "urgency": "Normal",
-        "first_aid": "Rest, drink plenty of fluids, take acetaminophen for fever and pain, and avoid mosquito bites to prevent spreading.",
-        "follow_up_questions": ["When did the symptoms start?", "Have you been in areas with dengue outbreaks?", "Is the rash itchy?"],
-        "stage": "Normal Stage",
-        "condition": "Dengue Fever"
-    },
-    {
-        "symptoms": ["high fever ", "severe headache", "pain behind eyes", "severe muscle pain", "vomiting"],
-        "specialty": "Infectious Disease",
-        "suggested_action": "Seek medical attention within 24 hours. You may need blood tests and close monitoring.",
-        "urgency": "Intermediate",
-        "first_aid": "Rest, stay hydrated with oral rehydration solutions, take acetaminophen for pain (avoid aspirin/NSAIDs), and use cool compresses.",
-        "follow_up_questions": ["How many days have you had fever?", "Are you able to keep fluids down?", "Have you noticed any bleeding or bruising?"],
-        "stage": "Intermediate Stage",
-        "condition": "Dengue Fever"
-    },
-    {
-        "symptoms": ["sudden drop in temperature", "severe abdominal pain", "persistent vomiting", "bleeding", "lethargy", "restlessness"],
-        "specialty": "Emergency Medicine / Infectious Disease",
-        "suggested_action": "This is a medical emergency. Go to the hospital immediately. This could indicate dengue hemorrhagic fever or dengue shock syndrome.",
-        "urgency": "Dangerous",
-        "first_aid": "While waiting for emergency care, keep the person hydrated with small sips of oral rehydration solution. Do not give aspirin or NSAIDs.",
-        "follow_up_questions": ["Is there any visible bleeding?", "When was the last time they urinated?", "Are they conscious and responsive?"],
-        "stage": "Dangerous Stage",
+        "symptoms": ["fever", "headache", "body aches", "rash", "high fever", "severe headache", "pain behind eyes" , "vomiting", "sudden drop in temperature", "severe abdominal pain", "persistent vomiting", "bleeding gums", "nosebleeds", "bleeding", "lethargy", "restlessness"],
+        "specialty": "Infectious Disease / Emergency Medicine",
+        "suggested_action": "Seek medical attention. For severe symptoms with bleeding or shock, go to emergency room immediately.",
+        "urgency": "Normal to Emergency",
+        "first_aid": "Rest, stay hydrated with oral rehydration solutions, take acetaminophen for pain (avoid aspirin/NSAIDs). For severe symptoms, seek emergency care.",
+        "follow_up_questions": ["How many days have you had fever?", "Are you able to keep fluids down?", "Have you noticed any bleeding or bruising?","Have you felt very weak, restless, or unusually drowsy?"],
         "condition": "Dengue Fever"
     },
     {
@@ -270,30 +218,30 @@ medical_data = [
         "follow_up_questions": ["How long have you felt fatigued?", "Is there any abdominal pain?", "Have you had recent contact with anyone who was sick?"],
         "condition": "Viral Infection"
     },
-    
     {
-    "symptoms": ["chest pain", "heartburn", "acid reflux", "bloating", "indigestion"],
-    "specialty": "Gastroenterology",
-    "suggested_action": "Schedule an appointment with a gastroenterologist. Avoid spicy foods and consider antacids.",
-    "urgency": "Routine",
-    "condition": "Acid Reflux / GERD"
-},
-{
-    "symptoms": ["chest pain", "difficulty swallowing", "food getting stuck", "heartburn"],
-    "specialty": "Gastroenterology", 
-    "suggested_action": "Consult a gastroenterologist for an endoscopy evaluation.",
-    "urgency": "Intermediate",
-    "condition": "Esophageal Disorder"
-},
-{
-    "symptoms": ["chest pain", "anxiety", "rapid heartbeat", "shortness of breath", "sweating"],
-    "specialty": "Cardiology / Psychiatry",
-    "suggested_action": "Consult both a cardiologist to rule out heart issues and a mental health professional for anxiety evaluation.",
-    "urgency": "Intermediate",
-    "condition": "Anxiety / Panic Attack"
+        "symptoms": ["chest pain", "heartburn", "acid reflux", "bloating", "indigestion"],
+        "specialty": "Gastroenterology",
+        "suggested_action": "Schedule an appointment with a gastroenterologist. Avoid spicy foods and consider antacids.",
+        "urgency": "Routine",
+        "condition": "Acid Reflux / GERD"
+    },
+    {
+        "symptoms": ["chest pain", "anxiety", "rapid heartbeat", "shortness of breath", "sweating"],
+        "specialty": "Cardiology / Psychiatry",
+        "suggested_action": "Consult both a cardiologist to rule out heart issues and a mental health professional for anxiety evaluation.",
+        "urgency": "Intermediate",
+        "condition": "Anxiety / Panic Attack"
+    },
+    {
+    "symptoms": ["fever", "chills", "sweating", "headache", "nausea", "vomiting", "muscle pain", "fatigue", "abdominal pain", "anemia", "jaundice", "confusion", "seizures", "difficulty breathing"],
+    "specialty": "Infectious Disease / Emergency Medicine",
+    "suggested_action": "Seek medical attention promptly. If severe symptoms like confusion, seizures, or breathing difficulty occur, go to emergency room immediately.",
+    "urgency": "Normal to Emergency",
+    "first_aid": "Rest, drink fluids to prevent dehydration, take acetaminophen for fever (avoid aspirin/NSAIDs). Seek prompt medical care for diagnosis and treatment.",
+    "follow_up_questions": ["Have you recently traveled to or lived in an area where malaria is common?", "How long have you had fever and chills?", "Are your symptoms occurring in cycles (fever, chills, sweating)?", "Have you noticed yellowing of the skin or eyes (jaundice)?"],
+    "condition": "Malaria"
 }
-    
-    
+
 ]
 
 # A separate database for doctor profiles
