@@ -183,7 +183,7 @@ medical_data = [
         "condition": "Influenza (Flu) or Severe Respiratory Infection"
     },
     {
-        "symptoms": ["fever", "joint pain", "rash", "headache", "muscle pain", "high fever", "severe joint pain", "eye pain", "nausea", "persistent high fever", "severe dehydration", "severe abdominal pain"],
+        "symptoms": ["joint swelling","fever", "joint pain", "rash", "headache", "muscle pain", "high fever", "severe joint pain", "eye pain", "nausea", "persistent high fever", "severe dehydration", "severe abdominal pain"],
         "specialty": "Infectious Disease",
         "suggested_action": "Seek medical attention. For severe symptoms with bleeding or dehydration, go to emergency room immediately.",
         "urgency": "Normal to Dangerous",

@@ -621,37 +621,6 @@ class MedicalChatBot:
                 initial_score *= 1.1
                 print(f"🍽️ [calculate_symptom_score] Gastric condition bonus: Gastric symptoms present. Score increased to {initial_score:.1f}")
         
-        """# 6. Add travel history bonus AFTER condition adjustments ( propblem is this code is adding 20 points for all fo the diseases if travel history is present)
-        travel_bonus = 0
-        if self.user_info.get("travel_history") and self.user_info["travel_history"] != "No travel":
-            condition_str = str(condition_symptoms).lower()
-            
-            # DENGUE: Only if traveled to DENGUE areas AND has dengue symptoms
-            if self.user_info["travel_history"] in self.dengue_prone_areas:
-                dengue_symptoms = ["high fever", "severe headache", "pain behind eyes", "bleeding gums", "nosebleeds"]
-                has_dengue_symptoms = any(symptom in condition_str for symptom in dengue_symptoms)
-                if has_dengue_symptoms:
-                    travel_bonus = 20
-                    print(f"✈️ Travel bonus for DENGUE: +20")
-            
-            # CHIKUNGUNYA: Only if traveled to CHIKUNGUNYA areas AND has chikungunya symptoms  
-            elif self.user_info["travel_history"] in self.chikungunya_prone_areas:
-                chikungunya_symptoms = ["joint pain", "joint swelling", "severe joint pain", "rash"]
-                has_chikungunya_symptoms = any(symptom in condition_str for symptom in chikungunya_symptoms)
-                if has_chikungunya_symptoms:
-                    travel_bonus = 20
-                    print(f"✈️ Travel bonus for CHIKUNGUNYA: +20")
-            
-            # MALARIA: Only if traveled to MALARIA areas AND has malaria symptoms
-            elif self.user_info["travel_history"] in self.malaria_prone_areas:
-                malaria_symptoms = ["fever", "chills", "sweating", "headache", "nausea"]
-                has_malaria_symptoms = any(symptom in condition_str for symptom in malaria_symptoms)
-                if has_malaria_symptoms:
-                    travel_bonus = 20
-                    print(f"✈️ Travel bonus for MALARIA: +20")
-            
-            # NO BONUS for other areas or diseases (like Influenza) ✅"""
-        
         # 6. Add travel history bonus AFTER condition adjustments
         travel_bonus = 0
         if self.user_info.get("travel_history") and self.user_info["travel_history"] != "No travel":
@@ -699,20 +668,45 @@ class MedicalChatBot:
     
     def check_clear_diagnosis(self) -> Optional[Dict]:
         """Check if there's a clear diagnosis based on key symptoms and travel history"""
+        # Only consider clear diagnosis if we have multiple specific symptoms
+        if len(self.user_symptoms) < 3:
+            return None
+        
         has_high_fever = any(s in self.user_symptoms for s in ["high fever", "fever"])
         has_travel_to_dengue_area = self.user_info.get("travel_history") in self.dengue_prone_areas
+        has_travel_to_chikungunya_area = self.user_info.get("travel_history") in self.chikungunya_prone_areas
         
+        # For dengue: require fever + travel + at least ONE dengue-specific symptom
         if has_high_fever and has_travel_to_dengue_area:
-            # Find dengue condition
-            for condition in self.medical_data:
-                if "dengue" in condition.get("condition", "").lower():
-                    return {
-                        "condition": condition,
-                        "confidence": 85,  # High confidence due to fever + travel
-                        "reason": "High fever combined with travel to dengue-prone area"
-                    }
+            dengue_specific_symptoms = ["rash", "bleeding gums", "nosebleeds", "severe headache", "pain behind eyes"]
+            has_dengue_specific = any(symptom in self.user_symptoms for symptom in dengue_specific_symptoms)
+            
+            if has_dengue_specific:
+                for condition in self.medical_data:
+                    if "dengue" in condition.get("condition", "").lower():
+                        # Calculate ACTUAL score, don't hardcode!
+                        actual_score = self.calculate_symptom_score(self.user_symptoms, condition["symptoms"])
+                        return {
+                            "condition": condition,
+                            "confidence": actual_score,  # ← USE REAL SCORE
+                            "reason": "Fever, travel to dengue area, and specific dengue symptoms"
+                        }
         
-        # Add other clear patterns here
+        # For chikungunya: require fever + travel + joint symptoms
+        if has_high_fever and has_travel_to_chikungunya_area:
+            chikungunya_specific_symptoms = ["joint pain", "joint swelling", "severe joint pain"]
+            has_chikungunya_specific = any(symptom in self.user_symptoms for symptom in chikungunya_specific_symptoms)
+            
+            if has_chikungunya_specific:
+                for condition in self.medical_data:
+                    if "chikungunya" in condition.get("condition", "").lower():
+                        actual_score = self.calculate_symptom_score(self.user_symptoms, condition["symptoms"])
+                        return {
+                            "condition": condition,
+                            "confidence": actual_score,  # ← USE REAL SCORE
+                            "reason": "Fever, travel to chikungunya area, and joint symptoms"
+                        }
+        
         return None
 
 
@@ -812,152 +806,8 @@ class MedicalChatBot:
         
         return matches[:top_n]
 
-    """def get_diagnostic_questions(self, suspected_conditions: List[Dict]) -> List[str]: 
-    
-    # the code was correct but i am using new code, if the code will goes wrong ill change it
-    
-        #Generate specific diagnostic questions based on suspected conditions
-        #print(f"🔍 [get_diagnostic_questions] Suspected conditions: {[cond['condition_name'] for cond in suspected_conditions]}")
-        
-        questions = []
-        asked_questions_set = set(self.asked_questions)  # Convert to set for faster lookup
-        
-        # If we have suspected conditions, ask differentiating questions
-        if suspected_conditions:
-            top_conditions = suspected_conditions[:2]  # Get top 2 conditions
-            condition_names = [cond["condition_name"].lower() for cond in top_conditions]
-            
-            #print(f"🔍 [get_diagnostic_questions] Top conditions: {condition_names}")
-            
-            # Ask questions to differentiate between cardiac and gastric issues
-            has_cardiac = any("heart" in name or "cardiac" in name or "attack" in name for name in condition_names)
-            has_gastric = any(name in ["acid reflux", "gerd", "gastric", "indigestion"] or "acid" in name for name in condition_names)
-            
-            if has_cardiac and has_gastric:
-                #print("🔍 [get_diagnostic_questions] Cardiac vs Gastric differentiation needed")
-                differentiating_questions = [
-                    "Is the pain worse after eating or when lying down?",
-                    "Does the pain feel like burning or pressure?",
-                    "Do you feel relief after taking antacids?",
-                    "Does the pain radiate to your arm, jaw, or back?",
-                    "Are you experiencing sweating or nausea with the pain?"
-                ]
-                
-                for question in differentiating_questions:
-                    if question not in asked_questions_set:
-                        questions.append(question)
-                        #print(f"✅ [get_diagnostic_questions] Added differentiating question: {question}")
-            
-            # Ask condition-specific questions for the top condition
-            if suspected_conditions:
-                top_condition = suspected_conditions[0]
-                condition_name = top_condition["condition_name"].lower()
-                
-                #print(f"🔍 [get_diagnostic_questions] Asking questions for top condition: {condition_name}")
-                
-                if "dengue" in condition_name:
-                    dengue_questions = [
-                        "Do you have any red spots or rash on your skin?",
-                        "Have you noticed any bleeding from your gums or nose?",
-                        "Have you traveled to any dengue-prone areas recently?"
-                    ]
-                    for question in dengue_questions:
-                        if question not in asked_questions_set:
-                            questions.append(question)
-                
-                elif "chikungunya" in condition_name:
-                    chikungunya_questions = [
-                        "Are your joints swollen or painful to move?",
-                        "Is the joint pain affecting your ability to perform daily activities?",
-                        "Have you been in areas with known chikungunya outbreaks?"
-                    ]
-                    for question in chikungunya_questions:
-                        if question not in asked_questions_set:
-                            questions.append(question)
-                
-                elif "appendicitis" in condition_name:
-                    appendicitis_questions = [
-                        "Is the pain specifically in your lower right abdomen?",
-                        "Does the pain get worse when you move or cough?",
-                        "Have you experienced loss of appetite or nausea?"
-                    ]
-                    for question in appendicitis_questions:
-                        if question not in asked_questions_set:
-                            questions.append(question)
-                
-                elif any(term in condition_name for term in ["heart", "cardiac"]):
-                    cardiac_questions = [
-                        "Does the pain radiate to your arm, jaw, or back?",
-                        "Are you experiencing shortness of breath or sweating?",
-                        "Do you have a history of heart problems?"
-                    ]
-                    for question in cardiac_questions:
-                        if question not in asked_questions_set:
-                            questions.append(question)
-                
-                elif any(term in condition_name for term in ["acid", "reflux", "gerd", "gastric"]):
-                    gastric_questions = [
-                        "Is the pain worse after eating?",
-                        "Do you experience heartburn or acid taste in your mouth?",
-                        "Does the pain improve with antacids?"
-                    ]
-                    for question in gastric_questions:
-                        if question not in asked_questions_set:
-                            questions.append(question)
-        
-        # General diagnostic questions based on symptoms
-        print(f"🔍 [get_diagnostic_questions] Checking general questions based on symptoms: {self.user_symptoms}")
-        
-        if any(s in self.user_symptoms for s in ["fever", "high fever"]):
-            if not self.user_info["fever_duration"] and "How long have you had fever?" not in asked_questions_set:
-                questions.append("How long have you had fever?")
-                #print("✅ [get_diagnostic_questions] Added fever duration question")
-            
-            if not self.user_info["fever_temperature"] and "What is your current temperature?" not in asked_questions_set:
-                questions.append("What is your current temperature?")
-                #print("✅ [get_diagnostic_questions] Added fever temperature question")
-                
-        if any(s in self.user_symptoms for s in ["pain", "abdominal pain", "chest pain"]):
-            if not self.user_info["pain_location"] and "Can you tell me exactly where the pain is located?" not in asked_questions_set:
-                questions.append("Can you tell me exactly where the pain is located?")
-                #print("✅ [get_diagnostic_questions] Added pain location question")
-            
-            if not self.user_info["pain_severity"] and "On a scale of 1-10, how severe is the pain?" not in asked_questions_set:
-                questions.append("On a scale of 1-10, how severe is the pain?")
-                #print("✅ [get_diagnostic_questions] Added pain severity question")
-                
-        if any(s in self.user_symptoms for s in ["rash", "bleeding gums", "nosebleeds"]):
-            if "When did you first notice these symptoms?" not in asked_questions_set:
-                questions.append("When did you first notice these symptoms?")
-                #print("✅ [get_diagnostic_questions] Added symptom timing question")
-                
-        if (not self.user_info.get("travel_history") and 
-            self.user_info.get("travel_history") != "No travel" and
-            "Have you traveled anywhere recently?" not in asked_questions_set and
-            any(s in self.user_symptoms for s in ["fever", "rash", "joint pain"])):
-            questions.append("Have you traveled anywhere recently?")
-            #print("✅ [get_diagnostic_questions] Added travel history question")
-        
-        # Remove duplicates and limit to 3 questions
-        questions = list(set(questions))
-        priority_questions = []
-        secondary_questions = []
-        
-        for q in questions:
-            if any(keyword in q.lower() for keyword in ["radiate", "sweating", "pressure", "bleeding", "emergency", "shortness of breath"]):
-                priority_questions.append(q)
-            else:
-                secondary_questions.append(q)
-        
-        # Combine with priority questions first
-        final_questions = priority_questions + secondary_questions
-        final_questions = final_questions[:3]  # Limit to 3 questions
-        #print(f"📋 [get_diagnostic_questions] Final questions: {final_questions}")
-        return final_questions"""
-
-
-    def get_diagnostic_questions(self, suspected_conditions: List[Dict]) -> List[str]:
-        """Generate specific diagnostic questions based on suspected conditions"""
+    """def get_diagnostic_questions(self, suspected_conditions: List[Dict]) -> List[str]:
+       # Generate specific diagnostic questions based on suspected conditions
         print(f"=== DEBUG: get_diagnostic_questions() called ===")
         print(f"User symptoms: {self.user_symptoms}")
         print(f"Suspected conditions: {[cond['condition_name'] for cond in suspected_conditions]}")
@@ -1063,6 +913,161 @@ class MedicalChatBot:
         if any(s in self.user_symptoms for s in ["rash", "bleeding gums", "nosebleeds"]):
             if "When did you first notice these symptoms?" not in asked_questions_set:
                 questions.append("When did you first notice these symptoms?")
+        
+        # Remove duplicates and prioritize emergency questions
+        questions = list(set(questions))
+        priority_questions = []
+        secondary_questions = []
+        
+        for q in questions:
+            if any(keyword in q.lower() for keyword in ["bleeding", "emergency", "shortness of breath", "severe", "radiate"]):
+                priority_questions.append(q)
+            else:
+                secondary_questions.append(q)
+        
+        # Combine with priority questions first
+        final_questions = priority_questions + secondary_questions
+        final_questions = final_questions[:3]  # Limit to 3 questions
+        
+        print(f"DEBUG: Final questions: {final_questions}")
+        return final_questions"""
+    
+    def get_diagnostic_questions(self, suspected_conditions: List[Dict]) -> List[str]:
+        """Generate specific diagnostic questions based on suspected conditions"""
+        print(f"=== DEBUG: get_diagnostic_questions() called ===")
+        print(f"User symptoms: {self.user_symptoms}")
+        print(f"Suspected conditions: {[cond['condition_name'] for cond in suspected_conditions]}")
+        
+        questions = []
+        asked_questions_set = set(self.asked_questions)
+        
+        # STAGE 1: Basic symptom questions FIRST (always prioritize these)
+        if any(s in self.user_symptoms for s in ["fever", "high fever"]):
+            if not self.user_info["fever_duration"] and "How long have you had fever?" not in asked_questions_set:
+                questions.append("How long have you had fever?")
+            
+            if not self.user_info["fever_temperature"] and "What is your current temperature?" not in asked_questions_set:
+                questions.append("What is your current temperature?")
+        
+        # Check if we have basic fever info to proceed to specific questions
+        has_basic_fever_info = (self.user_info.get("fever_duration") is not None and 
+                            self.user_info.get("fever_temperature") is not None)
+        
+        # STAGE 2: Disease differentiation questions (ONLY after basic info)
+        if has_basic_fever_info and suspected_conditions:
+            top_conditions = suspected_conditions[:3]
+            condition_names = [cond["condition_name"].lower() for cond in top_conditions]
+            print(f"DEBUG: Top conditions: {condition_names}")
+            
+            # Check if we have fever-related diseases
+            fever_diseases = ["dengue", "chikungunya", "influenza", "flu", "common cold", "cold"]
+            has_fever_diseases = any(any(disease in name for disease in fever_diseases) for name in condition_names)
+            
+            if has_fever_diseases and len(top_conditions) >= 2:
+                # Ask about RASH first (key differentiator for all fever diseases)
+                if "Do you have any skin rash or red spots?" not in asked_questions_set:
+                    questions.append("Do you have any skin rash or red spots?")
+                
+                # If we have rash info or multiple conditions, ask more specific
+                if "rash" in self.user_symptoms or len(top_conditions) >= 2:
+                    differentiating_questions = []
+                    
+                    # DENGUE-specific questions (ask these first if suspected)
+                    if any("dengue" in name for name in condition_names):
+                        dengue_questions = [
+                            "Have you noticed bleeding from gums?",
+                            "Have you experienced nosebleeds?",
+                            "Do you have severe headache or pain behind your eyes?",
+                            "Do you have severe abdominal pain?"
+                        ]
+                        differentiating_questions.extend(dengue_questions)
+                    
+                    # CHIKUNGUNYA-specific questions
+                    if any("chikungunya" in name for name in condition_names):
+                        chikungunya_questions = [
+                            "Do you have severe joint pain or swelling?",
+                            "Are your joints painful to move?",
+                            "Do you have muscle pain?"
+                        ]
+                        differentiating_questions.extend(chikungunya_questions)
+                    
+                    # INFLUENZA-specific questions
+                    if any("influenza" in name for name in condition_names) or any("flu" in name for name in condition_names):
+                        influenza_questions = [
+                            "Do you have cough or respiratory symptoms?",
+                            "Do you have runny nose or sore throat?",
+                            "Do you have body aches or fatigue?"
+                        ]
+                        differentiating_questions.extend(influenza_questions)
+                        
+                    # Add this section with the other disease-specific questions:
+                    if any("common cold" in name for name in condition_names) or any("cold" in name for name in condition_names):
+                        common_cold_questions = [
+                            "Do you have runny nose or nasal congestion?",
+                            "Do you have sore throat?",
+                            "Do you have sneezing or watery eyes?",
+                            "Is your cough productive (with phlegm)?"
+                        ]
+                        differentiating_questions.extend(common_cold_questions)
+                    
+                    # Add unique questions only (limit to 2 per turn)
+                    for question in differentiating_questions:
+                        if (question not in asked_questions_set and 
+                            question not in questions and 
+                            len(questions) < 3):  # Increased limit to 3
+                            questions.append(question)
+        
+        # STAGE 3: Travel history questions (ONLY after we have specific symptoms)
+        has_fever = any(s in self.user_symptoms for s in ["fever", "high fever"])
+        travel_unknown = (not self.user_info.get("travel_history") and 
+                        self.user_info.get("travel_history") != "No travel")
+        
+        # Only ask travel if we have specific symptoms beyond just fever
+        has_specific_symptoms = len(self.user_symptoms) > 1  # More than just fever
+        
+        if (has_fever and travel_unknown and has_basic_fever_info and has_specific_symptoms and
+            "Have you traveled anywhere recently?" not in asked_questions_set and
+            "Have you traveled anywhere recently?" not in questions):
+            
+            # Check if we have travel-relevant diseases
+            travel_relevant = False
+            if suspected_conditions:
+                for condition in suspected_conditions[:2]:
+                    condition_name = condition["condition_name"].lower()
+                    if any(disease in condition_name for disease in ["dengue", "chikungunya", "malaria"]):
+                        travel_relevant = True
+                        break
+            
+            if travel_relevant:
+                questions.append("Have you traveled anywhere recently?")
+        
+        # STAGE 4: Follow-up questions based on travel response
+        if (self.user_info.get("travel_mentioned") and 
+            not self.user_info.get("travel_history") and
+            self.user_info.get("travel_history") != "No travel" and
+            "Which specific area did you travel to?" not in asked_questions_set and
+            len(questions) < 3):
+            questions.append("Which specific area did you travel to?")
+        
+        # STAGE 5: Current location question if no travel
+        if (self.user_info.get("travel_history") == "No travel" and
+            "What is your current location?" not in asked_questions_set and
+            "What is your current location?" not in questions and
+            len(questions) < 3):
+            questions.append("What is your current location?")
+        
+        # STAGE 6: General symptom questions (only if we have space)
+        if len(questions) < 2:  # Only add if we have room
+            if any(s in self.user_symptoms for s in ["pain", "abdominal pain", "chest pain"]):
+                if not self.user_info["pain_location"] and "Can you tell me exactly where the pain is located?" not in asked_questions_set:
+                    questions.append("Can you tell me exactly where the pain is located?")
+                
+                if not self.user_info["pain_severity"] and "On a scale of 1-10, how severe is the pain?" not in asked_questions_set and len(questions) < 3:
+                    questions.append("On a scale of 1-10, how severe is the pain?")
+                    
+            if any(s in self.user_symptoms for s in ["rash", "bleeding gums", "nosebleeds"]):
+                if "When did you first notice these symptoms?" not in asked_questions_set and len(questions) < 3:
+                    questions.append("When did you first notice these symptoms?")
         
         # Remove duplicates and prioritize emergency questions
         questions = list(set(questions))
@@ -1593,7 +1598,7 @@ class MedicalChatBot:
             last_question_lower = self.last_question.lower()
             
             # Handle bleeding-related questions
-            if any(term in last_question_lower for term in ['bleeding', 'hemorrhage', 'blood loss', 'oozing', 'flowing', 'gushing', 'gums', 'gingiva', 'gum tissue', 'gumline', 'nose', 'nostril', 'nasal passage', 'sinus', 'blood', 'plasma', 'clot', 'gore']):
+            """if any(term in last_question_lower for term in ['bleeding', 'hemorrhage', 'blood loss', 'oozing', 'flowing', 'gushing', 'gums', 'gingiva', 'gum tissue', 'gumline', 'nose', 'nostril', 'nasal passage', 'sinus', 'blood', 'plasma', 'clot', 'gore']):
                 if response_type == "affirmative":
                     extracted_info["bleeding_symptoms"] = True
                     extracted_info["gum_bleeding"] = 'gums' in last_question_lower
@@ -1608,6 +1613,41 @@ class MedicalChatBot:
                     extracted_info["gum_bleeding"] = False
                     extracted_info["nose_bleeding"] = False
                     # REMOVE THE SYMPTOMS FROM USER_SYMPTOMS
+                    if "bleeding gums" in self.user_symptoms:
+                        self.user_symptoms.remove("bleeding gums")
+                    if "nosebleeds" in self.user_symptoms:
+                        self.user_symptoms.remove("nosebleeds")"""
+                        
+                # REPLACE the bleeding handling code with this:
+
+            if any(term in last_question_lower for term in ['bleeding', 'hemorrhage', 'blood loss', 'oozing', 'flowing', 'gushing', 'blood', 'plasma', 'clot', 'gore']):
+                if response_type == "affirmative":
+                    extracted_info["bleeding_symptoms"] = True
+                    
+                    # Check SPECIFICALLY what type of bleeding was asked about
+                    if 'gums' in last_question_lower and 'nose' not in last_question_lower:
+                        # Only gums mentioned
+                        extracted_info["gum_bleeding"] = True
+                        extracted_info["nose_bleeding"] = False
+                        self.user_symptoms.append("bleeding gums")
+                        
+                    elif 'nose' in last_question_lower and 'gums' not in last_question_lower:
+                        # Only nose mentioned  
+                        extracted_info["nose_bleeding"] = True
+                        extracted_info["gum_bleeding"] = False
+                        self.user_symptoms.append("nosebleeds")
+                        
+                    elif 'gums' in last_question_lower and 'nose' in last_question_lower:
+                        # Both mentioned - need to ask follow-up to specify which one
+                        extracted_info["bleeding_mentioned"] = True  # Don't assume which one
+                        # DON'T add any symptoms yet - ask for clarification
+                        print("⚠️ Both gums and nose mentioned, need clarification")
+                        
+                elif response_type == "negative":
+                    extracted_info["bleeding_symptoms"] = False
+                    extracted_info["gum_bleeding"] = False
+                    extracted_info["nose_bleeding"] = False
+                    # Remove both symptoms
                     if "bleeding gums" in self.user_symptoms:
                         self.user_symptoms.remove("bleeding gums")
                     if "nosebleeds" in self.user_symptoms:
@@ -2242,7 +2282,7 @@ class MedicalChatBot:
             # If we have fever + headache + travel to dengue area, we should provide diagnosis
             if (has_fever and has_headache and has_travel_history and 
                 self.user_info["travel_history"] in self.dengue_prone_areas and
-                has_fever_info):
+                has_fever_info and len(self.user_symptoms) >= 4):
                 
                 # Find dengue-related conditions
                 dengue_conditions = [cond for cond in self.medical_data 
