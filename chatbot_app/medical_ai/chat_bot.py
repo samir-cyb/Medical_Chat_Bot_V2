@@ -133,8 +133,7 @@ class MedicalChatBot:
         self.current_focus = None
         self.last_question = None
         
-    def load_knowledge_base(self):
-        """Load the knowledge base with symptom weights and mappings"""
+    """def load_knowledge_base(self):
         try:
             with open(KNOWLEDGE_BASE_PATH, 'r') as f:
                 full_data = json.load(f)
@@ -149,7 +148,89 @@ class MedicalChatBot:
             return True
         except Exception as e:
             print(f"Error loading knowledge base: {e}")
+            return False"""
+            
+    def load_knowledge_base(self):
+        """Load the knowledge base with symptom weights and mappings"""
+        try:
+            with open(KNOWLEDGE_BASE_PATH, 'r') as f:
+                full_data = json.load(f)
+            
+            self.medical_data = full_data["medical_data"]
+            self.symptom_weights = full_data["symptom_weights"]
+            self.symptom_mapping = full_data["symptom_mapping"]
+            self.dengue_prone_areas = full_data["dengue_prone_areas"]
+            self.chikungunya_prone_areas = full_data["chikungunya_prone_areas"]
+            self.doctor_profiles = full_data["doctor_profiles"] 
+            print(f"✅ DEBUG: Loaded {len(self.doctor_profiles)} doctor profiles")
+            print(f"✅ DEBUG: First doctor: {self.doctor_profiles[0]['name'] if self.doctor_profiles else 'None'}")
+            
+            if "malaria_prone_areas" in full_data:
+                self.malaria_prone_areas = full_data["malaria_prone_areas"]
+            
+            # MISSING: Store doctor profiles
+            # self.doctor_profiles = full_data["doctor_profiles"]  # ← Add this line
+            print(f"✅ Loaded {len(self.doctor_profiles)} doctor profiles")
+            return True
+        except Exception as e:
+            print(f"❌ Error loading knowledge base: {e}")
+            print(f"❌ Available keys in full_data: {list(full_data.keys()) if 'full_data' in locals() else 'No data loaded'}")
             return False
+        
+    def get_recommended_doctors(self, specialty, location=None, limit=3):
+        """Get recommended doctors based on specialty - IMPROVED MATCHING"""
+        if not hasattr(self, 'doctor_profiles') or not self.doctor_profiles:
+            print("❌ DEBUG: No doctor_profiles available")
+            return []
+        
+        print(f"✅ DEBUG: Looking for doctors for specialty: {specialty}")
+        print(f"✅ DEBUG: Total doctors: {len(self.doctor_profiles)}")
+        
+        recommended = []
+        
+        # Split combined specialties and look for individual matches
+        specialty_terms = []
+        if "/" in specialty:
+            # Handle "Gastroenterology / Emergency Medicine" format
+            specialty_terms = [s.strip() for s in specialty.split("/")]
+        elif "or" in specialty.lower():
+            # Handle "Gastroenterology or Emergency Medicine" format  
+            specialty_terms = [s.strip() for s in re.split(r'\bor\b', specialty, flags=re.IGNORECASE)]
+        else:
+            specialty_terms = [specialty.strip()]
+        
+        print(f"✅ DEBUG: Specialty terms to match: {specialty_terms}")
+        
+        for doctor in self.doctor_profiles:
+            doctor_specialty = doctor['specialty'].lower()
+            doctor_name = doctor['name']
+            
+            # Check if any specialty term matches
+            for term in specialty_terms:
+                term_lower = term.lower()
+                
+                # Flexible matching: check if term is contained in doctor specialty
+                # or if doctor specialty is contained in term
+                if (term_lower in doctor_specialty or 
+                    doctor_specialty in term_lower or
+                    any(term_word in doctor_specialty for term_word in term_lower.split()) or
+                    any(doctor_word in term_lower for doctor_word in doctor_specialty.split())):
+                    
+                    recommended.append(doctor)
+                    print(f"✅ DEBUG: Found match - Doctor: {doctor_name}, Specialty: {doctor['specialty']}")
+                    break  # Don't add the same doctor multiple times
+        
+        print(f"✅ DEBUG: Found {len(recommended)} matching doctors")
+        
+        # Remove duplicates (in case a doctor matches multiple terms)
+        unique_recommended = []
+        seen_doctors = set()
+        for doctor in recommended:
+            if doctor['name'] not in seen_doctors:
+                unique_recommended.append(doctor)
+                seen_doctors.add(doctor['name'])
+        
+        return unique_recommended[:limit]
             
     def initialize_bot(self) -> bool:
         """Initializes and returns the QA chain for the chatbot."""
@@ -622,9 +703,15 @@ class MedicalChatBot:
         if any(term in condition_name for term in ["heart", "cardiac", "attack", "myocardial"]):
             cardiac_specific = ["pain radiating to arm or jaw", "heart palpitations", 
                             "sweating", "nausea with chest pain", "shortness of breath with chest pain"]
-            has_cardiac_specific = any(s in user_symptoms for s in cardiac_specific)
+            """has_cardiac_specific = any(s in user_symptoms for s in cardiac_specific)
             if not has_cardiac_specific:
-                initial_score *= 0.8
+                initial_score *= 0.98"""
+            cardiac_count = sum(1 for s in user_symptoms if s in cardiac_specific)
+    
+            if cardiac_count == 0:
+                initial_score *= 0.95  # 5% penalty for no cardiac symptoms
+            elif cardiac_count == 1:
+                initial_score *= 0.98
                 print(f"❤️ [calculate_symptom_score] Cardiac condition penalty: No specific cardiac symptoms. Score reduced to {initial_score:.1f}")
         
         # For gastric conditions
@@ -836,9 +923,58 @@ class MedicalChatBot:
         print(f"User symptoms: {self.user_symptoms}")
         print(f"Suspected conditions: {[cond['condition_name'] for cond in suspected_conditions]}")
         
+        # === ADD THIS EMERGENCY OVERRIDE CODE FIRST ===
+        if suspected_conditions:
+            top_condition = suspected_conditions[0]["condition_name"].lower()
+            
+            # Find the urgency level for the top condition
+            urgency = ""
+            for condition in self.medical_data:
+                if condition.get("condition", "").lower() == top_condition:
+                    urgency = condition.get("urgency", "").lower()
+                    break
+            
+            # FORCE questions for emergency conditions below 80%
+            if urgency in ["emergency", "dangerous", "urgent"] and suspected_conditions[0]["score"] < 80:
+                emergency_questions = [
+                    "On a scale of 1-10, how severe is the pain?",
+                    "Are you having difficulty breathing?",
+                    "Do you feel dizzy or faint?", 
+                    "Is the pain spreading to other areas?",
+                    "Are you experiencing sweating or nausea?"
+                ]
+                
+                # Filter out already asked questions
+                new_questions = [q for q in emergency_questions if q not in self.asked_questions]
+                
+                if new_questions:
+                    print(f"DEBUG: Emergency override - returning questions: {new_questions[:2]}")
+                    return new_questions[:2]  # Return first 2 unasked questions
+        
+        
+        
         questions = []
         asked_questions_set = set(self.asked_questions)
         
+        
+        if suspected_conditions and suspected_conditions[0]["condition_name"].lower() == "heart attack":
+            heart_attack_score = suspected_conditions[0]["score"]
+            
+            # Ask critical cardiac questions if score is below 80%
+            if heart_attack_score < 80:
+                cardiac_questions = [
+                    "Does the pain radiate to your arm, jaw, or back?",
+                    "Are you experiencing shortness of breath?",
+                    "Do you have heart palpitations or irregular heartbeat?",
+                    "Are you sweating or feeling nauseous?",
+                    "Do you feel dizzy or lightheaded?"
+                ]
+                
+                # Filter out already asked questions
+                new_questions = [q for q in cardiac_questions if q not in self.asked_questions]
+                
+                if new_questions:
+                    return new_questions[:2]  # Return 2 questions at a time
         
         if suspected_conditions and suspected_conditions[0]["condition_name"].lower() == "appendicitis":
             # Always ask these critical questions for appendicitis
@@ -1208,10 +1344,37 @@ class MedicalChatBot:
         else:
             response += "\n• Diagnostic tests as recommended by your doctor based on examination"
         
-        # Doctor specialty
-        response += "\n\nSPECIALIST RECOMMENDATION:"
-        response += f"\n• Please consult a: {condition.get('specialty', 'Primary Care Physician')}"
+         # Doctor specialty
+        specialty = condition.get('specialty', 'Primary Care Physician')
+        response += f"\n\nSPECIALIST RECOMMENDATION:"
+        response += f"\n• Please consult a: {specialty}"
         
+        # ADD DOCTOR RECOMMENDATIONS HERE
+        if hasattr(self, 'doctor_profiles') and self.doctor_profiles:
+            recommended_doctors = self.get_recommended_doctors(specialty)
+            
+            # ADD DOCTOR RECOMMENDATIONS - NEW CODE
+            try:
+                if hasattr(self, 'doctor_profiles') and self.doctor_profiles:
+                    recommended_doctors = self.get_recommended_doctors(specialty)
+                    
+                    if recommended_doctors:
+                        response += "\n\nRECOMMENDED DOCTORS:"
+                        for i, doctor in enumerate(recommended_doctors, 1):
+                            response += f"\n{i}. {doctor['name']} - {doctor['specialty']}"
+                            response += f"\n   📞 {doctor['contact']}"
+                            response += f"\n   📍 {doctor['location']}"
+                    else:
+                        response += "\n\n💡 No specific doctors found in database for this specialty."
+                        response += "\n   Please search for specialists in your area."
+                else:
+                    response += "\n\n💡 Doctor database not available."
+                    response += "\n   Please consult any specialist in this field."
+            except Exception as e:
+                print(f"❌ Error in doctor recommendation: {e}")
+                response += "\n\n💡 Could not load doctor recommendations."
+                
+                
         # Travel history note
         if self.user_info["travel_history"]:
             travel_risk = self.check_travel_history_risk(self.user_info["travel_history"])
@@ -1235,6 +1398,35 @@ class MedicalChatBot:
         response += "\n" + "="*60
         
         return response
+    
+    
+    # Add this temporary method to your MedicalChatBot class
+    def debug_check_doctor_data(self):
+        """Debug method to check doctor data"""
+        try:
+            with open(KNOWLEDGE_BASE_PATH, 'r') as f:
+                data = json.load(f)
+            
+            print(f"📊 DEBUG: JSON keys: {list(data.keys())}")
+            if 'doctor_profiles' in data:
+                print(f"📊 DEBUG: Doctor profiles count: {len(data['doctor_profiles'])}")
+                for i, doctor in enumerate(data['doctor_profiles'][:3]):
+                    print(f"📊 DEBUG: Doctor {i+1}: {doctor}")
+            else:
+                print("❌ DEBUG: No 'doctor_profiles' key in JSON")
+                
+        except Exception as e:
+            print(f"❌ DEBUG: Error reading JSON: {e}")
+            
+            
+    def debug_show_all_doctors(self):
+        """Debug method to show all doctors in database"""
+        if hasattr(self, 'doctor_profiles') and self.doctor_profiles:
+            print("📋 ALL DOCTORS IN DATABASE:")
+            for i, doctor in enumerate(self.doctor_profiles):
+                print(f"{i+1}. Dr. {doctor['name']} - {doctor['specialty']} - {doctor['location']}")
+        else:
+            print("❌ No doctor profiles loaded")
 
     def get_dengue_test_recommendation(self):
         """Recommend appropriate dengue test based on fever duration"""

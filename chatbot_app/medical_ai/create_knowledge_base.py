@@ -13,14 +13,14 @@ symptom_weights = {
     "stiff neck": 8, "light sensitivity": 7, "severe dizziness": 8, "fainting": 9, "severe cough": 7,"persistent cough": 7,
     # New high urgency symptoms
     "sudden chest tightness": 9, "severe shortness of breath": 9, "uncontrolled bleeding": 10,
-    "sudden severe headache": 9, "loss of consciousness": 10, "rapid heartbeat": 8,"chest pain": 7, 
+    "sudden severe headache": 9, "loss of consciousness": 10, "rapid heartbeat": 8, 
     "severe allergic reaction": 9, "anaphylaxis": 10, "seizures": 10, "sudden vision loss": 9,
     
     "sharp pain lower right abdomen": 9,    # +10 bonus
     "right lower quadrant pain": 9,         # +10 bonus  
     "rebound tenderness": 10,               # +10 bonus
     "abdominal pain with nausea": 7,
-    "fever" :5, "worsening pain": 6,
+    "fever" :5, "worsening pain": 6, "sweating": 7,"nausea":5,
     # Dengue specific symptoms
     "high fever": 8, "severe headache": 7, "pain behind eyes": 8, "severe muscle pain": 7,
     "severe joint pain": 7, "skin rash": 6, "mild bleeding": 7, "low platelet count": 8,
@@ -180,7 +180,7 @@ medical_data = [
         "condition": "Appendicitis"
     },
     {
-        "symptoms": ["chest pain", "pain radiating to arm or jaw", "shortness of breath", "heart palpitations"],
+        "symptoms": ["nausea", "chest pain", "pain radiating to arm or jaw", "shortness of breath", "heart palpitations","severe pain","sweating","difficulty breathing"],
         "specialty": "Cardiology / Emergency Medicine",
         "suggested_action": "This is a medical emergency. Go to the nearest Emergency Room or call emergency services immediately. Do not drive yourself.",
         "urgency": "Emergency",
@@ -262,46 +262,16 @@ medical_data = [
 # A separate database for doctor profiles
 doctor_profiles = [
     {
-        "name": "Dr. Aruna Reddy",
+        "name": "Dr. Sohel Ferdoes",
         "specialty": "Cardiology",
-        "contact": "+91-9876543210",
-        "location": "Apolo Hospital, Delhi"
+        "contact": "016727478914",
+        "location": "Popular Diagnostic Centre, Dhaka"
     },
     {
         "name": "Dr. Sameer Khan",
         "specialty": "Gastroenterology",
-        "contact": "+91-9988776655",
-        "location": "Max Healthcare, Delhi"
-    },
-    {
-        "name": "Dr. Priya Sharma",
-        "specialty": "Dermatology",
-        "contact": "+91-9012345678",
-        "location": "Fortis Hospital, Mumbai"
-    },
-    {
-        "name": "Dr. Rajiv Gupta",
-        "specialty": "Neurology",
-        "contact": "+91-9765432109",
-        "location": "AIIMS, Delhi"
-    },
-    {
-        "name": "Dr. Pooja Singh",
-        "specialty": "General Practice",
-        "contact": "+91-9123456789",
-        "location": "City Clinic, Delhi"
-    },
-    {
-        "name": "Dr. Vikram Malhotra",
-        "specialty": "Infectious Disease",
-        "contact": "+91-9234567890",
-        "location": "Medanta Hospital, Delhi"
-    },
-    {
-        "name": "Dr. Anjali Mehta",
-        "specialty": "Emergency Medicine",
-        "contact": "+91-9345678901",
-        "location": "Fortis Hospital, Mumbai"
+        "contact": "01820671840",
+        "location": "Green Life Medical College & Hospital, Dhaka"
     },
     {
         "name": "Dr. Mohammad Rahman",
@@ -320,7 +290,97 @@ doctor_profiles = [
         "specialty": "Emergency Medicine",
         "contact": "+880-1912345678",
         "location": "Ibn Sina Hospital, Dhaka"
+    },
+    
+    {
+        "name": "Prof. Dr. Tahmina Shirin",
+        "specialty": "Infectious Disease",
+        "contact": "+880-2-9661062",
+        "location": "Institute of Epidemiology, Disease Control and Research (IEDCR), Dhaka"
+    },
+    {
+        "name": "Dr. Mushtuq Hussain",
+        "specialty": "Infectious Disease",
+        "contact": "+880-1712-345678", # Example number format
+        "location": "Dhaka Medical College Hospital, Dhaka"
+    },
+    {
+        "name": "Dr. Firdausi Qadri",
+        "specialty": "Infectious Disease",
+        "contact": "+880-2-9887987",
+        "location": "icddr,b, Mohakhali, Dhaka"
+    },
+
+    # Gastroenterology (For Appendicitis, GERD)
+    {
+        "name": "Prof. Dr. Mohammad Ali",
+        "specialty": "Gastroenterology",
+        "contact": "+880-2-58616191",
+        "location": "Bangabandhu Sheikh Mujib Medical University (BSMMU), Dhaka"
+    },
+    {
+        "name": "Dr. Sanowar Hossain",
+        "specialty": "Gastroenterology",
+        "contact": "+880-1811-223344",
+        "location": "Square Hospitals Ltd, Dhaka"
+    },
+
+    # Cardiology (For Heart Attack, Chest Pain)
+    {
+        "name": "Prof. Dr. Md. Abdul Kader Akanda",
+        "specialty": "Cardiology",
+        "contact": "+880-2-9660015",
+        "location": "National Institute of Cardiovascular Diseases (NICVD), Dhaka"
+    },
+    {
+        "name": "Dr. Sohel Reza Choudhury",
+        "specialty": "Cardiology",
+        "contact": "+880-1911-556677",
+        "location": "National Heart Foundation Hospital, Dhaka"
+    },
+
+    # Neurology (For Headaches, Migraines)
+    {
+        "name": "Prof. Dr. Quazi Deen Mohammad",
+        "specialty": "Neurology",
+        "contact": "+880-2-58616191",
+        "location": "National Institute of Neurosciences & Hospital (NINS), Dhaka"
+    },
+    {
+        "name": "Dr. Md. Rafiqul Islam",
+        "specialty": "Neurology",
+        "contact": "+880-1715-998877",
+        "location": "Bangabandhu Sheikh Mujib Medical University (BSMMU), Dhaka"
+    },
+
+    # General Practice / Primary Care (For Common Cold, Flu)
+    {
+        "name": "Dr. Lelin Chowdhury",
+        "specialty": "General Practice",
+        "contact": "+880-1303-456789",
+        "location": "Popular Diagnostic Centre, Dhanmondi, Dhaka"
+    },
+    {
+        "name": "Dr. Ayesha Begum",
+        "specialty": "General Practice",
+        "contact": "+880-1847-123456",
+        "location": "Labaid Specialized Hospital, Dhaka"
+    },
+
+    # Emergency Medicine (For all urgent cases)
+    {
+        "name": "Dr. Md. Ehteshamul Huq Choudhury",
+        "specialty": "Emergency Medicine",
+        "contact": "Emergency: +880-1990-200200",
+        "location": "Apollo Hospitals Dhaka, Bashundhara R/A"
+    },
+    {
+        "name": "Dr. Nabila Rahman",
+        "specialty": "Emergency Medicine",
+        "contact": "+880-2-58616191 (Ext. Emergency Dept.)",
+        "location": "Dhaka Medical College Hospital, Dhaka"
     }
+    
 ]
 
 def create_knowledge_base():
