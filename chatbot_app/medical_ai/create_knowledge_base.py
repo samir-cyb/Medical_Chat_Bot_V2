@@ -13,9 +13,14 @@ symptom_weights = {
     "stiff neck": 8, "light sensitivity": 7, "severe dizziness": 8, "fainting": 9, "severe cough": 7,"persistent cough": 7,
     # New high urgency symptoms
     "sudden chest tightness": 9, "severe shortness of breath": 9, "uncontrolled bleeding": 10,
-    "sudden severe headache": 9, "loss of consciousness": 10, "rapid heartbeat": 8,"difficulty breathing": 8, "chest pain": 7, 
+    "sudden severe headache": 9, "loss of consciousness": 10, "rapid heartbeat": 8,"chest pain": 7, 
     "severe allergic reaction": 9, "anaphylaxis": 10, "seizures": 10, "sudden vision loss": 9,
     
+    "sharp pain lower right abdomen": 9,    # +10 bonus
+    "right lower quadrant pain": 9,         # +10 bonus  
+    "rebound tenderness": 10,               # +10 bonus
+    "abdominal pain with nausea": 7,
+    "fever" :5, "worsening pain": 6,
     # Dengue specific symptoms
     "high fever": 8, "severe headache": 7, "pain behind eyes": 8, "severe muscle pain": 7,
     "severe joint pain": 7, "skin rash": 6, "mild bleeding": 7, "low platelet count": 8,
@@ -54,7 +59,12 @@ symptom_weights = {
     "slight sore throat": 3, "mild body aches": 3, "slight fatigue": 3,
     "mild nausea": 4, "occasional diarrhea": 4, "mild rash": 4,
     "slight joint pain": 4, "mild skin irritation": 3, "occasional dizziness": 4,
-    "mild eye irritation": 3, "slight muscle soreness": 3, "mild thirst": 3
+    "mild eye irritation": 3, "slight muscle soreness": 3, "mild thirst": 3,
+     "abdominal pain": 5,  # Medium weight for generic pain
+    "sharp pain lower right abdomen": 9,  # High weight for specific
+    "heartburn": 6,       # Medium weight
+    "acid reflux": 6,   # Medium weight
+    "severe pain": 8, # High weight for severe pain
 }
 
 # Symptom mapping for normalization - EXPANDED
@@ -110,6 +120,35 @@ symptom_mapping = {
     "sneezing": ["sneezing", "sneezes", "achoo"],
     "productive cough": ["productive cough", "cough with phlegm", "mucus cough"],
     "dry cough": ["dry cough", "non-productive cough", "tickly cough"],
+    
+    "sharp pain lower right abdomen": [
+        "sharp pain lower right abdomen", 
+        "sharp pain in lower right abdomen",
+        "right lower abdominal sharp pain",
+        "stabbing pain right lower abdomen",
+        "sharp pain in my lower right abdomen"  # ← ADD THIS EXACT PHRASE
+    ],
+    "right lower quadrant pain": [
+        "right lower quadrant pain",
+        "rlq pain", 
+        "pain in right lower quadrant",
+        "lower right quadrant pain"
+    ],
+    "rebound tenderness": [
+        "rebound tenderness",
+        "pain when release pressure",
+        "hurts more when let go",
+        "tender when pressing and releasing"
+    ],
+    "abdominal pain with nausea": [
+        "abdominal pain with nausea",
+        "stomach pain and nausea",
+        "belly pain with sick feeling",
+        "abdominal pain and vomiting"
+    ],
+    "heartburn": ["heartburn", "acid reflux", "burning sensation in chest"],
+    "bloating": ["bloating", "feeling bloated", "abdominal bloating"],
+    "indigestion": ["indigestion", "upset stomach", "dyspepsia"],
     "dehydration": ["dehydration", "dehydrated", "dry mouth", "excessive thirst", "dark urine", "feeling thirsty all the time", "dry skin", "lack of fluids", "thirsty and dry", "dehydrated feeling", "not enough water", "sunken eyes", "dry lips", "thirstiness", "fluid loss", "parched", "really thirsty", "feeling dried out", "low hydration", "thirsty constantly", "dry and thirsty", "no moisture in mouth", "dehydration symptoms", "craving water", "body feels dry"]
 }
 
@@ -132,7 +171,7 @@ malaria_prone_areas = [
 # This is our medical knowledge dataset.
 medical_data = [
     {
-        "symptoms": ["sharp pain lower right abdomen", "right lower quadrant pain", "abdominal pain with nausea", "rebound tenderness"],
+        "symptoms": ["severe pain", "worsening pain" , "sharp pain lower right abdomen", "right lower quadrant pain", "abdominal pain with nausea", "rebound tenderness","abdominal pain","fever","nausea","vomiting","loss of appetite"],
         "specialty": "Gastroenterology / Emergency Medicine",
         "suggested_action": "Seek immediate medical attention at an Urgent Care or Emergency Room. This could indicate appendicitis, which is a medical emergency.",
         "urgency": "Urgent",
@@ -148,15 +187,6 @@ medical_data = [
         "first_aid": "If you are with the person, have them sit down and rest. If they have prescribed nitroglycerin, help them take it. If they are unresponsive, call for emergency help.",
         "follow_up_questions": ["Is the pain sharp or dull?", "Are you feeling dizzy?", "Is there shortness of breath?"],
         "condition": "Heart Attack"
-    },
-    {
-        "symptoms": ["persistent rash", "changing mole", "new skin growth", "severe acne"],
-        "specialty": "Dermatology",
-        "suggested_action": "Schedule a routine appointment with a dermatologist for evaluation.",
-        "urgency": "Routine",
-        "first_aid": "Keep the affected area clean and dry. Avoid scratching. Use over-the-counter hydrocortisone cream if it's an itch.",
-        "follow_up_questions": ["Has the rash spread?", "Is it itchy?", "Is there any pain or pus?"],
-        "condition": "Skin Condition"
     },
     {
         "symptoms": ["fever", "cough", "sore throat", "runny nose", "body aches", "sneezing"],
@@ -204,25 +234,7 @@ medical_data = [
         "condition": "Dengue Fever"
     },
     {
-        "symptoms": ["fever", "stiff neck", "headache", "confusion", "light sensitivity"],
-        "specialty": "Emergency Medicine / Neurology",
-        "suggested_action": "Seek emergency medical care immediately. These could be signs of meningitis.",
-        "urgency": "Emergency",
-        "first_aid": "Keep the person in a quiet, dark room. Do not give anything by mouth if they are confused or vomiting.",
-        "follow_up_questions": ["When did the neck stiffness start?", "Is there a rash anywhere on the body?", "Any recent head injury?"],
-        "condition": "Possible Meningitis"
-    },
-    {
-        "symptoms": ["fever", "sore throat", "swollen lymph nodes", "fatigue", "loss of appetite"],
-        "specialty": "Primary Care / Infectious Disease",
-        "suggested_action": "Schedule an appointment with your doctor. This could be mononucleosis or another viral infection.",
-        "urgency": "Routine",
-        "first_aid": "Rest, hydrate, and use throat lozenges or salt water gargles for throat pain.",
-        "follow_up_questions": ["How long have you felt fatigued?", "Is there any abdominal pain?", "Have you had recent contact with anyone who was sick?"],
-        "condition": "Viral Infection"
-    },
-    {
-        "symptoms": ["chest pain", "heartburn", "acid reflux", "bloating", "indigestion"],
+        "symptoms": ["chest pain", "heartburn", "acid reflux", "bloating", "indigestion","abdominal pain"],
         "specialty": "Gastroenterology",
         "suggested_action": "Schedule an appointment with a gastroenterologist. Avoid spicy foods and consider antacids.",
         "urgency": "Routine",

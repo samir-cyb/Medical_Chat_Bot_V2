@@ -532,20 +532,6 @@ class MedicalChatBot:
             
             
             # comment out for dublicate function
-        """if not pain_scale_match:  # Only extract temperature if it's not a pain scale response
-            fever_match = re.search(r'(\d{2,3}(?:\.\d{1,2})?)\s*(degrees|°|fahrenheit|f|celcius|c|degree|deg|temp|temperature)', user_input_lower)
-            if fever_match:
-                try:
-                    temp = float(fever_match.group(1))
-                    self.user_info["fever_temperature"] = temp
-                    found_symptoms.add("fever")
-                    if temp >= 102:
-                        found_symptoms.add("high fever")
-                    elif temp <= 101:
-                        found_symptoms.add("mild fever")
-                #    print(f"✅ [extract_symptoms] Extracted temperature: {temp}°F")
-                except ValueError:
-                    pass"""
         
         if "high fever" in found_symptoms and "fever" in found_symptoms:
             found_symptoms.remove("fever")
@@ -804,14 +790,20 @@ class MedicalChatBot:
             if urgency in ["emergency", "dangerous", "urgent"] and score > 0:
                 specific_symptoms = [s for s in condition_symptoms if self.symptom_weights.get(s, 5) >= 7]
                 matched_specific = [s for s in user_symptoms if s in specific_symptoms]
+                # Add these debug prints in your penalty logic:
+                print(f"DEBUG: Condition symptoms: {condition_symptoms}")
+                print(f"DEBUG: Specific symptoms (weight≥7): {specific_symptoms}")
+                print(f"DEBUG: User symptoms: {user_symptoms}")
+                print(f"DEBUG: Matched specific symptoms: {matched_specific}")
+                print(f"DEBUG: Expected 2 specific symptoms, found: {len(matched_specific)}")
                 
                 # Only apply a penalty if the user has multiple symptoms but is missing the key ones for this emergency
                 # If the user only has one symptom (like 'high fever'), it might be the start of the condition. Don't penalize it heavily.
-                if len(matched_specific) < 2 and len(user_symptoms) > 1:
-                    penalty_factor = 0.8  # Reduced penalty: only 20% reduction
+                """if len(matched_specific) < 2 and len(user_symptoms) > 1:
+                    penalty_factor = 0.95  # Reduced penalty: only 5% reduction
                     original_score = score
                     score *= penalty_factor
-                    print(f"⚠️ [find_best_matches] Emergency condition '{condition_name}' penalty...")
+                    print(f"⚠️ [find_best_matches] Emergency condition '{condition_name}' penalty...")"""
                 # If the user has only one symptom and it's a strong match, don't penalize it.
                 # The bot will just ask more questions to confirm.
     
@@ -846,6 +838,22 @@ class MedicalChatBot:
         
         questions = []
         asked_questions_set = set(self.asked_questions)
+        
+        
+        if suspected_conditions and suspected_conditions[0]["condition_name"].lower() == "appendicitis":
+            # Always ask these critical questions for appendicitis
+            appendicitis_questions = [
+                "Do you have nausea or vomiting?",
+                "Do you have a fever?",
+                "Does the pain get worse when you move or cough?",
+                "Have you lost your appetite?"
+            ]
+            
+            # Filter out already asked questions
+            new_questions = [q for q in appendicitis_questions if q not in asked_questions_set]
+            
+            if new_questions:
+                return new_questions[:2]  # Return first 2 unasked questions
         
         # STAGE 1: Basic symptom questions FIRST (always prioritize these)
         if any(s in self.user_symptoms for s in ["fever", "high fever"]):
@@ -1543,6 +1551,17 @@ class MedicalChatBot:
                     if "nosebleeds" in self.user_symptoms:
                         self.user_symptoms.remove("nosebleeds")
             
+            
+            # Add this handler for the pain worsening question:
+            elif any(term in last_question_lower for term in ['pain get worse', 'worse when move', 'worse when cough']):
+                if response_type == "affirmative":
+                    extracted_info["worsening_pain"] = True
+                    self.user_symptoms.append("worsening pain")  # ← This should be in Appendicitis symptoms
+                elif response_type == "negative":
+                    extracted_info["worsening_pain"] = False
+                    if "worsening pain" in self.user_symptoms:
+                        self.user_symptoms.remove("worsening pain")
+            
             # Handle common cold symptoms
             elif any(term in last_question_lower for term in ['runny nose', 'nasal congestion', 'stuffy nose', 'nasal']):
                 if response_type == "affirmative":
@@ -2078,7 +2097,7 @@ class MedicalChatBot:
                 self.diagnostic_stage = "symptom_clarification"
             
             # If we have a high-confidence match, provide final recommendation
-            if self.diagnostic_stage == "confirmation" and best_matches:
+            """if self.diagnostic_stage == "confirmation" and best_matches:
                 best_match = best_matches[0]
                 
                 # SAFETY CHECK: Don't diagnose emergency conditions without multiple specific symptoms
@@ -2111,7 +2130,78 @@ class MedicalChatBot:
                 self.user_info = {key: None for key in self.user_info}
                 self.diagnostic_stage = "initial"
                 
-                return response, False
+                return response, False"""
+            
+            if self.diagnostic_stage == "confirmation" and best_matches:
+                best_match = best_matches[0]
+                
+                # SAFETY CHECK: Don't diagnose emergency conditions without multiple specific symptoms
+                condition_name = best_match["condition"].get("condition", "").lower()
+                urgency = best_match["condition"].get("urgency", "").lower()
+                
+                # For emergency/dangerous conditions, require at least 2 specific symptoms
+                safety_check_passed = True
+                if urgency in ["emergency", "dangerous", "urgent"]:
+                    specific_symptoms = [s for s in best_match["condition"]["symptoms"] 
+                                    if self.symptom_weights.get(s, 5) >= 7]
+                    matched_specific = len([s for s in self.user_symptoms if s in specific_symptoms])
+                    
+                    if matched_specific < 2:
+                        print(f"⚠️ SAFETY CHECK: Emergency condition '{condition_name}' needs at least 2 specific symptoms, but only has {matched_specific}")
+                        # Don't provide final diagnosis, ask more questions instead
+                        self.diagnostic_stage = "symptom_clarification"
+                        safety_check_passed = False
+                
+                # Only provide final diagnosis if it passes safety checks
+                if self.diagnostic_stage == "confirmation" and safety_check_passed:
+                    response = self.generate_final_recommendation(best_match["condition"], best_match["score"])
+                    
+                    # Add bot response to history
+                    self.chat_history.append(f"Bot: {response}")
+                    
+                    # Reset for next conversation
+                    self.is_medical_chat = False
+                    self.asked_questions.clear()
+                    self.current_follow_ups = []
+                    self.user_symptoms = []
+                    self.user_info = {key: None for key in self.user_info}
+                    self.diagnostic_stage = "initial"
+                    
+                    return response, False
+                else:
+                    # Safety check failed or diagnostic stage changed - ask more questions
+                    diagnostic_questions = self.get_diagnostic_questions(best_matches)
+                    
+                    if diagnostic_questions:
+                        # Use empathetic introduction
+                        empathetic_intro = self.generate_empathetic_response()
+                        question = empathetic_intro + diagnostic_questions[0]
+                        
+                        # Store the question we're about to ask
+                        self.last_question = diagnostic_questions[0]
+                        self.asked_questions.add(diagnostic_questions[0])
+                        self.current_follow_ups = diagnostic_questions[1:]
+                        
+                        # Add bot response to history
+                        self.chat_history.append(f"Bot: {question}")
+                        
+                        return question, True
+                    else:
+                        # No more questions available - provide gentle guidance
+                        response = "I understand you're concerned about your symptoms. Based on the information provided, I recommend consulting a healthcare professional for a proper evaluation."
+                        self.chat_history.append(f"Bot: {response}")
+                        
+                        # Reset for next conversation
+                        self.is_medical_chat = False
+                        self.asked_questions.clear()
+                        self.current_follow_ups = []
+                        self.user_symptoms = []
+                        self.user_info = {key: None for key in self.user_info}
+                        self.diagnostic_stage = "initial"
+                        
+                        return response, False
+            
+            
             
             # Otherwise, ask diagnostic questions - REMOVE THE MANUAL TRAVEL QUESTION INSERTION
             diagnostic_questions = self.get_diagnostic_questions(best_matches)
