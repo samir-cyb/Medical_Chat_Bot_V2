@@ -61,10 +61,7 @@
                 "sore throat",
                 "runny nose",
                 "body aches",
-                "mild fever",
-                "slight runny nose",
-                "occasional sneezing",
-                "mild headache"
+                "sneezing"
             ],
             "specialty": "Primary Care / General Practice",
             "suggested_action": "Schedule an appointment with your primary care doctor or visit an Urgent Care clinic for evaluation. Rest and hydrate.",
@@ -98,14 +95,21 @@
         {
             "symptoms": [
                 "high fever",
-                "severe body aches",
+                "body aches",
+                "cough",
+                "runny nose",
+                "sore throat",
                 "persistent cough",
-                "extreme fatigue",
+                "fatigue",
                 "very high fever",
                 "difficulty breathing",
                 "chest pain",
                 "severe dehydration",
-                "confusion"
+                "muscle pain",
+                "severe body aches",
+                "extreme fatigue",
+                "severe cough",
+                "debilitating muscle pain"
             ],
             "specialty": "Primary Care / Emergency Medicine",
             "suggested_action": "Seek medical attention. For severe symptoms, go to emergency care immediately.",
@@ -157,7 +161,7 @@
                 "vomiting",
                 "sudden drop in temperature",
                 "severe abdominal pain",
-                "persistent vomiting",
+                "vomiting",
                 "bleeding gums",
                 "nosebleeds",
                 "bleeding",
@@ -340,7 +344,7 @@
         "pain radiating to arm or jaw": 9,
         "shortness of breath": 8,
         "heart palpitations": 9,
-        "difficulty breathing": 9,
+        "difficulty breathing": 8,
         "severe dehydration": 9,
         "bleeding gums": 8,
         "nosebleeds": 8,
@@ -356,6 +360,8 @@
         "light sensitivity": 7,
         "severe dizziness": 8,
         "fainting": 9,
+        "severe cough": 7,
+        "persistent cough": 6,
         "sudden chest tightness": 9,
         "severe shortness of breath": 9,
         "uncontrolled bleeding": 10,
@@ -402,7 +408,6 @@
         "red swollen joints": 6,
         "chronic joint pain": 6,
         "severe body aches": 7,
-        "persistent cough": 6,
         "extreme fatigue": 6,
         "rash": 5,
         "eye pain": 6,
@@ -1433,6 +1438,21 @@
             "swollen and sore glands",
             "puffy lymph nodes",
             "neck glands swollen"
+        ],
+        "sneezing": [
+            "sneezing",
+            "sneezes",
+            "achoo"
+        ],
+        "productive cough": [
+            "productive cough",
+            "cough with phlegm",
+            "mucus cough"
+        ],
+        "dry cough": [
+            "dry cough",
+            "non-productive cough",
+            "tickly cough"
         ],
         "dehydration": [
             "dehydration",

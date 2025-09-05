@@ -577,6 +577,8 @@ class MedicalChatBot:
             print("⚠️ [calculate_symptom_score] Empty symptoms list, returning 0")
             return 0
         
+        
+        
         # 1. Count how many of USER's symptoms match the condition
         matches_count = 0
         matched_symptoms = []
@@ -594,7 +596,7 @@ class MedicalChatBot:
         specificity_bonus = 0
         for symptom in matched_symptoms:
             weight = self.symptom_weights.get(symptom, 5)
-            if weight >= 7:  # Rare/specific symptom
+            if weight >= 6:  # Rare/specific symptom
                 specificity_bonus += 10
                 print(f"⭐ [calculate_symptom_score] Rare symptom bonus: {symptom} (+10)")
         
@@ -602,6 +604,32 @@ class MedicalChatBot:
         specificity_bonus = min(specificity_bonus, 50)
         # 4. Calculate initial score (before any adjustments)
         initial_score = base_score + specificity_bonus
+        
+        
+        # Add this after specificity_bonus calculation:
+
+        # 4. Uniqueness bonus: Extra points for symptoms that only match this condition (max 20%)
+        uniqueness_bonus = 0
+        for symptom in matched_symptoms:
+            # Check how many other conditions have this symptom
+            symptom_count = 0
+            for condition in self.medical_data:
+                if symptom in condition["symptoms"]:
+                    symptom_count += 1
+            
+            # If this symptom only appears in 1-2 conditions, give bonus
+            if symptom_count <= 2:
+                uniqueness_bonus += 2
+                print(f"🎯 [calculate_symptom_score] Unique symptom bonus: {symptom} (+2)")
+
+        # Cap uniqueness bonus at 10%
+        uniqueness_bonus = min(uniqueness_bonus, 10)
+
+        # Add to final score
+        initial_score = base_score + specificity_bonus + uniqueness_bonus
+                
+        
+        
         # 5. Apply condition-specific adjustments FIRST
         condition_name = str(condition_symptoms).lower()
         # For cardiac conditions
@@ -620,6 +648,9 @@ class MedicalChatBot:
             if has_gastric_symptoms:
                 initial_score *= 1.1
                 print(f"🍽️ [calculate_symptom_score] Gastric condition bonus: Gastric symptoms present. Score increased to {initial_score:.1f}")
+        
+        
+        
         
         # 6. Add travel history bonus AFTER condition adjustments
         travel_bonus = 0
@@ -806,131 +837,6 @@ class MedicalChatBot:
         
         return matches[:top_n]
 
-    """def get_diagnostic_questions(self, suspected_conditions: List[Dict]) -> List[str]:
-       # Generate specific diagnostic questions based on suspected conditions
-        print(f"=== DEBUG: get_diagnostic_questions() called ===")
-        print(f"User symptoms: {self.user_symptoms}")
-        print(f"Suspected conditions: {[cond['condition_name'] for cond in suspected_conditions]}")
-        
-        questions = []
-        asked_questions_set = set(self.asked_questions)
-        
-        # STAGE 1: Basic symptom questions FIRST
-        if any(s in self.user_symptoms for s in ["fever", "high fever"]):
-            if not self.user_info["fever_duration"] and "How long have you had fever?" not in asked_questions_set:
-                questions.append("How long have you had fever?")
-            
-            if not self.user_info["fever_temperature"] and "What is your current temperature?" not in asked_questions_set:
-                questions.append("What is your current temperature?")
-        
-        # STAGE 2: Disease differentiation questions
-        if suspected_conditions:
-            top_conditions = suspected_conditions[:3]
-            condition_names = [cond["condition_name"].lower() for cond in top_conditions]
-            print(f"DEBUG: Top conditions: {condition_names}")
-            
-            # Check if we have fever-related diseases
-            fever_diseases = ["dengue", "chikungunya", "influenza", "flu"]
-            has_fever_diseases = any(any(disease in name for disease in fever_diseases) for name in condition_names)
-            
-            if has_fever_diseases and len(top_conditions) >= 2:
-                # Ask disease-specific differentiating questions
-                differentiating_questions = []
-                
-                if any("dengue" in name for name in condition_names):
-                    differentiating_questions.extend([
-                        "Do you have any skin rash or red spots?",
-                        "Have you noticed bleeding from gums or nose?",
-                        "Do you have severe abdominal pain?"
-                    ])
-                
-                if any("chikungunya" in name for name in condition_names):
-                    differentiating_questions.extend([
-                        "Do you have joint pain or swelling?",
-                        "Are your joints painful to move?",
-                        "Do you have muscle pain?"
-                    ])
-                
-                if any("influenza" in name for name in condition_names) or any("flu" in name for name in condition_names):
-                    differentiating_questions.extend([
-                        "Do you have cough or respiratory symptoms?",
-                        "Do you have runny nose or sore throat?",
-                        "Do you have body aches or fatigue?"
-                    ])
-                
-                # Add unique questions only
-                for question in differentiating_questions:
-                    if (question not in asked_questions_set and 
-                        question not in questions and 
-                        len(questions) < 2):  # Limit to 2 differentiation questions
-                        questions.append(question)
-        
-        # STAGE 3: Travel history questions (ONLY after basic info and disease questions)
-        has_fever = any(s in self.user_symptoms for s in ["fever", "high fever"])
-        travel_unknown = (not self.user_info.get("travel_history") and 
-                        self.user_info.get("travel_history") != "No travel")
-        
-        # Only ask travel if we have basic fever info and disease differentiation is done
-        has_basic_fever_info = (self.user_info.get("fever_duration") is not None and 
-                            self.user_info.get("fever_temperature") is not None)
-        
-        if (has_fever and travel_unknown and has_basic_fever_info and
-            "Have you traveled anywhere recently?" not in asked_questions_set and
-            "Have you traveled anywhere recently?" not in questions):
-            
-            # Check if we have travel-relevant diseases
-            if suspected_conditions:
-                travel_relevant_count = 0
-                for condition in suspected_conditions[:2]:  # Check top 2
-                    condition_name = condition["condition_name"].lower()
-                    if any(disease in condition_name for disease in ["dengue", "chikungunya", "malaria"]):
-                        travel_relevant_count += 1
-                
-                if travel_relevant_count >= 1:  # At least one travel-relevant disease
-                    questions.append("Have you traveled anywhere recently?")
-        
-        # STAGE 4: Follow-up questions based on travel response
-        if (self.user_info.get("travel_mentioned") and 
-            not self.user_info.get("travel_history") and
-            self.user_info.get("travel_history") != "No travel" and
-            "Which specific area did you travel to?" not in asked_questions_set):
-            questions.append("Which specific area did you travel to?")
-        
-        # STAGE 5: Current location question if no travel
-        if (self.user_info.get("travel_history") == "No travel" and
-            "What is your current location?" not in asked_questions_set and
-            "What is your current location?" not in questions):
-            questions.append("What is your current location?")
-        
-        # STAGE 6: General symptom questions
-        if any(s in self.user_symptoms for s in ["pain", "abdominal pain", "chest pain"]):
-            if not self.user_info["pain_location"] and "Can you tell me exactly where the pain is located?" not in asked_questions_set:
-                questions.append("Can you tell me exactly where the pain is located?")
-            
-            if not self.user_info["pain_severity"] and "On a scale of 1-10, how severe is the pain?" not in asked_questions_set:
-                questions.append("On a scale of 1-10, how severe is the pain?")
-                
-        if any(s in self.user_symptoms for s in ["rash", "bleeding gums", "nosebleeds"]):
-            if "When did you first notice these symptoms?" not in asked_questions_set:
-                questions.append("When did you first notice these symptoms?")
-        
-        # Remove duplicates and prioritize emergency questions
-        questions = list(set(questions))
-        priority_questions = []
-        secondary_questions = []
-        
-        for q in questions:
-            if any(keyword in q.lower() for keyword in ["bleeding", "emergency", "shortness of breath", "severe", "radiate"]):
-                priority_questions.append(q)
-            else:
-                secondary_questions.append(q)
-        
-        # Combine with priority questions first
-        final_questions = priority_questions + secondary_questions
-        final_questions = final_questions[:3]  # Limit to 3 questions
-        
-        print(f"DEBUG: Final questions: {final_questions}")
-        return final_questions"""
     
     def get_diagnostic_questions(self, suspected_conditions: List[Dict]) -> List[str]:
         """Generate specific diagnostic questions based on suspected conditions"""
@@ -996,7 +902,12 @@ class MedicalChatBot:
                         influenza_questions = [
                             "Do you have cough or respiratory symptoms?",
                             "Do you have runny nose or sore throat?",
-                            "Do you have body aches or fatigue?"
+                            "Do you have body aches or fatigue?",
+                            "Is your cough persistent or severe?",
+                            "Are you experiencing extreme fatigue or weakness?",
+                            "Do you have difficulty breathing or chest pain?",
+                            "Are your body aches severe or debilitating?"
+                            
                         ]
                         differentiating_questions.extend(influenza_questions)
                         
@@ -1588,7 +1499,7 @@ class MedicalChatBot:
                 # Add pain severity symptom
                 if pain_level >= 7:
                     self.user_symptoms.append("severe pain")
-                elif pain_level >= 4:
+                elif pain_level  < 7 and pain_level >=4:
                     self.user_symptoms.append("moderate pain")
                 else:
                     self.user_symptoms.append("mild pain")
@@ -1596,27 +1507,6 @@ class MedicalChatBot:
         # Check if this is a response to the last asked question
         if self.last_question:
             last_question_lower = self.last_question.lower()
-            
-            # Handle bleeding-related questions
-            """if any(term in last_question_lower for term in ['bleeding', 'hemorrhage', 'blood loss', 'oozing', 'flowing', 'gushing', 'gums', 'gingiva', 'gum tissue', 'gumline', 'nose', 'nostril', 'nasal passage', 'sinus', 'blood', 'plasma', 'clot', 'gore']):
-                if response_type == "affirmative":
-                    extracted_info["bleeding_symptoms"] = True
-                    extracted_info["gum_bleeding"] = 'gums' in last_question_lower
-                    extracted_info["nose_bleeding"] = 'nose' in last_question_lower
-                    # ADD THE SYMPTOMS TO USER_SYMPTOMS
-                    if 'gums' in last_question_lower:
-                        self.user_symptoms.append("bleeding gums")
-                    if 'nose' in last_question_lower:
-                        self.user_symptoms.append("nosebleeds")
-                elif response_type == "negative":
-                    extracted_info["bleeding_symptoms"] = False
-                    extracted_info["gum_bleeding"] = False
-                    extracted_info["nose_bleeding"] = False
-                    # REMOVE THE SYMPTOMS FROM USER_SYMPTOMS
-                    if "bleeding gums" in self.user_symptoms:
-                        self.user_symptoms.remove("bleeding gums")
-                    if "nosebleeds" in self.user_symptoms:
-                        self.user_symptoms.remove("nosebleeds")"""
                         
                 # REPLACE the bleeding handling code with this:
 
@@ -1653,6 +1543,94 @@ class MedicalChatBot:
                     if "nosebleeds" in self.user_symptoms:
                         self.user_symptoms.remove("nosebleeds")
             
+            # Handle common cold symptoms
+            elif any(term in last_question_lower for term in ['runny nose', 'nasal congestion', 'stuffy nose', 'nasal']):
+                if response_type == "affirmative":
+                    extracted_info["runny_nose"] = True
+                    self.user_symptoms.append("runny nose")
+                elif response_type == "negative":
+                    extracted_info["runny_nose"] = False
+                    if "runny nose" in self.user_symptoms:
+                        self.user_symptoms.remove("runny nose")
+
+            elif any(term in last_question_lower for term in ['sore throat', 'throat pain', 'throat sore']):
+                if response_type == "affirmative":
+                    extracted_info["sore_throat"] = True
+                    self.user_symptoms.append("sore throat")
+                elif response_type == "negative":
+                    extracted_info["sore_throat"] = False
+                    if "sore throat" in self.user_symptoms:
+                        self.user_symptoms.remove("sore throat")
+
+            elif any(term in last_question_lower for term in ['sneezing', 'watery eyes', 'itchy eyes']):
+                if response_type == "affirmative":
+                    extracted_info["sneezing"] = True
+                    self.user_symptoms.append("sneezing")
+                elif response_type == "negative":
+                    extracted_info["sneezing"] = False
+                    if "sneezing" in self.user_symptoms:
+                        self.user_symptoms.remove("sneezing")
+
+            elif any(term in last_question_lower for term in ['productive cough', 'phlegm', 'mucus']):
+                if response_type == "affirmative":
+                    extracted_info["productive_cough"] = True
+                    self.user_symptoms.append("productive cough")
+                elif response_type == "negative":
+                    extracted_info["productive_cough"] = False
+                    if "productive cough" in self.user_symptoms:
+                        self.user_symptoms.remove("productive cough")
+            
+            # Add this section with the other symptom handlers:
+            elif any(term in last_question_lower for term in ['cough', 'respiratory symptoms', 'breathing problems', 'coughing']):
+                if response_type == "affirmative":
+                    extracted_info["cough"] = True
+                    self.user_symptoms.append("cough")
+                elif response_type == "negative":
+                    extracted_info["cough"] = False
+                    if "cough" in self.user_symptoms:
+                        self.user_symptoms.remove("cough")
+                        
+            elif any(term in last_question_lower for term in ['persistent cough', 'constant cough', 'nonstop coughing']):
+                if response_type == "affirmative":
+                    extracted_info["persistent_cough"] = True
+                    self.user_symptoms.append("persistent cough")
+                elif response_type == "negative":
+                    extracted_info["persistent_cough"] = False
+                    if "persistent cough" in self.user_symptoms:
+                        self.user_symptoms.remove("persistent cough")
+                        
+            # Add this section with the other symptom handlers:
+
+            # Handler for extreme fatigue question
+            elif any(term in last_question_lower for term in ['extreme fatigue', 'extreme weakness', 'severe fatigue']):
+                if response_type == "affirmative":
+                    extracted_info["extreme_fatigue"] = True
+                    self.user_symptoms.append("extreme fatigue")  # ← This gets weight 6
+                elif response_type == "negative":
+                    extracted_info["extreme_fatigue"] = False
+                    if "extreme fatigue" in self.user_symptoms:
+                        self.user_symptoms.remove("extreme fatigue")
+
+            # Handler for difficulty breathing question  
+            elif any(term in last_question_lower for term in ['difficulty breathing', 'chest pain', 'breathing problems', 'shortness of breath']):
+                if response_type == "affirmative":
+                    if 'breathing' in last_question_lower or 'shortness' in last_question_lower:
+                        extracted_info["shortness_of_breath"] = True
+                        self.user_symptoms.append("difficulty breathing")  # ← This gets weight 8
+                    if 'chest' in last_question_lower or 'pain' in last_question_lower:
+                        extracted_info["chest_pain"] = True
+                        self.user_symptoms.append("chest pain")  # ← This gets weight 7
+                elif response_type == "negative":
+                    if 'breathing' in last_question_lower:
+                        extracted_info["shortness_of_breath"] = False
+                        if "difficulty breathing" in self.user_symptoms:
+                            self.user_symptoms.remove("difficulty breathing")
+                    if 'chest' in last_question_lower:
+                        extracted_info["chest_pain"] = False
+                        if "chest pain" in self.user_symptoms:
+                            self.user_symptoms.remove("chest pain")
+            
+            
             # Handle heart problems question            
             elif any(term in last_question_lower for term in [
                                             'heart problems', 'cardiac problems', 'heart condition', 'cardiac disorder', 
@@ -1673,12 +1651,11 @@ class MedicalChatBot:
                     
                         # Handle shortness of breath question
             elif any(term in last_question_lower for term in [
- 'shortness of breath', 'breathlessness', 'difficulty breathing', 'dyspnea', 
- 'labored breathing', 'trouble breathing', 'respiratory distress', 'hard to catch breath', 'winded',
- 'breathing', 'respiration', 'inhaling', 'exhaling', 'ventilation', 'gas exchange', 'breathing rate', 'pulmonary function',
- 'sweating', 'perspiration', 'diaphoresis', 'clamminess', 'damp skin', 
- 'excessive sweating', 'hyperhidrosis', 'moist skin', 'cold sweat'
-]):
+            'shortness of breath', 'breathlessness', 'difficulty breathing', 'dyspnea', 
+            'labored breathing', 'trouble breathing', 'respiratory distress', 'hard to catch breath', 'winded',
+            'breathing', 'respiration', 'inhaling', 'exhaling', 'ventilation', 'gas exchange', 'breathing rate', 'pulmonary function',
+            'sweating', 'perspiration', 'diaphoresis', 'clamminess', 'damp skin', 
+            'excessive sweating', 'hyperhidrosis', 'moist skin', 'cold sweat']):
                 if response_type == "affirmative":
                     extracted_info["shortness_of_breath"] = True
                     self.user_symptoms.append("shortness of breath")
@@ -1689,11 +1666,10 @@ class MedicalChatBot:
                     
              # Handle pain severity question
             elif any(term in last_question_lower for term in [
- 'scale', 'rating scale', 'measurement scale', 'severity scale', 'numeric scale', 'pain scale', 'grading scale',
- '1-10', 'one to ten', 'scale of ten', 'out of ten', 'ten-point scale', 'pain score 0-10', 'zero to ten',
- 'how severe', 'severity level', 'degree of pain', 'how bad', 'intensity', 'level of discomfort', 'extent of pain', 'how much it hurts',
- 'pain level', 'pain rating', 'pain severity', 'pain intensity', 'discomfort level', 'ache level', 'distress level', 'suffering scale'
-]):
+            'scale', 'rating scale', 'measurement scale', 'severity scale', 'numeric scale', 'pain scale', 'grading scale',
+            '1-10', 'one to ten', 'scale of ten', 'out of ten', 'ten-point scale', 'pain score 0-10', 'zero to ten',
+            'how severe', 'severity level', 'degree of pain', 'how bad', 'intensity', 'level of discomfort', 'extent of pain', 'how much it hurts',
+            'pain level', 'pain rating', 'pain severity', 'pain intensity', 'discomfort level', 'ache level', 'distress level', 'suffering scale']):
                 if user_input_lower.isdigit():
                     pain_level = int(user_input_lower)
                     extracted_info["pain_severity"] = f"{pain_level}/10"
@@ -1702,13 +1678,12 @@ class MedicalChatBot:
                         
             # Handle rash-related questions
             elif any(term in last_question_lower for term in [
- 'rash', 'skin rash', 'eruption', 'breakout', 'skin irritation', 'dermatitis', 
- 'hives', 'welts', 'skin outbreak', 'allergic rash',
- 'skin', 'epidermis', 'dermis', 'cutaneous tissue', 'outer layer', 
- 'complexion', 'flesh', 'integument',
- 'red spots', 'red bumps', 'blotches', 'patches', 'red marks', 
- 'red dots', 'lesions', 'papules', 'eruptions', 'skin discoloration'
-]):
+            'rash', 'skin rash', 'eruption', 'breakout', 'skin irritation', 'dermatitis', 
+            'hives', 'welts', 'skin outbreak', 'allergic rash',
+            'skin', 'epidermis', 'dermis', 'cutaneous tissue', 'outer layer', 
+            'complexion', 'flesh', 'integument',
+            'red spots', 'red bumps', 'blotches', 'patches', 'red marks', 
+            'red dots', 'lesions', 'papules', 'eruptions', 'skin discoloration']):
                 if response_type == "affirmative":
                     extracted_info["rash"] = True
                     self.user_symptoms.append("rash")  # ADD RASH TO SYMPTOMS
@@ -1718,13 +1693,43 @@ class MedicalChatBot:
                     if "rash" in self.user_symptoms:
                         self.user_symptoms.remove("rash")
             
+            # Add this section with the other symptom handlers:
+            elif any(term in last_question_lower for term in ['body aches', 'muscle aches', 'fatigue', 'tiredness', 'exhaustion']):
+                if response_type == "affirmative":
+                    if 'body ache' in last_question_lower or 'muscle ache' in last_question_lower:
+                        extracted_info["body_aches"] = True
+                        self.user_symptoms.append("body aches")
+                    if 'fatigue' in last_question_lower or 'tired' in last_question_lower or 'exhaustion' in last_question_lower:
+                        extracted_info["fatigue"] = True
+                        self.user_symptoms.append("fatigue")
+                elif response_type == "negative":
+                    if 'body ache' in last_question_lower or 'muscle ache' in last_question_lower:
+                        extracted_info["body_aches"] = False
+                        if "body aches" in self.user_symptoms:
+                            self.user_symptoms.remove("body aches")
+                    if 'fatigue' in last_question_lower or 'tired' in last_question_lower or 'exhaustion' in last_question_lower:
+                        extracted_info["fatigue"] = False
+                        if "fatigue" in self.user_symptoms:
+                            self.user_symptoms.remove("fatigue")
+            
+            
+            # Add this section with the other symptom handlers:
+            elif any(term in last_question_lower for term in ['muscle pain', 'muscle ache', 'myalgia', 'sore muscles']):
+                if response_type == "affirmative":
+                    extracted_info["muscle_pain"] = True
+                    self.user_symptoms.append("muscle pain")
+                elif response_type == "negative":
+                    extracted_info["muscle_pain"] = False
+                    if "muscle pain" in self.user_symptoms:
+                        self.user_symptoms.remove("muscle pain")
+            
+            
             # Handle joint-related questions
             elif any(term in last_question_lower for term in [
- 'joint', 'articulation', 'hinge', 'synovial joint', 'bone connection', 'cartilage junction', 'musculoskeletal joint',
- 'swollen', 'puffy', 'enlarged', 'inflamed', 'edematous', 'distended', 'bloated', 'tender swelling',
- 'painful to move', 'restricted movement', 'stiff joint', 'limited mobility', 'reduced range of motion',
- 'sore when moving', 'movement pain', 'joint stiffness', 'difficulty moving', 'aching with motion'
-]):
+            'joint', 'articulation', 'hinge', 'synovial joint', 'bone connection', 'cartilage junction', 'musculoskeletal joint',
+            'swollen', 'puffy', 'enlarged', 'inflamed', 'edematous', 'distended', 'bloated', 'tender swelling',
+            'painful to move', 'restricted movement', 'stiff joint', 'limited mobility', 'reduced range of motion',
+            'sore when moving', 'movement pain', 'joint stiffness', 'difficulty moving', 'aching with motion']):
                 if response_type == "affirmative":
                     extracted_info["joint_swelling"] = True
                     self.user_symptoms.append("joint swelling")  # ADD JOINT SWELLING TO SYMPTOMS
@@ -1972,260 +1977,6 @@ class MedicalChatBot:
         
         return extracted_info
 
-    """def process_medical_query(self, user_input: str) -> Tuple[str, bool]:
-    
-    #this function is also correct, i am just using new one because of my cheacking new code.
-    
-    
-        print(f"🔍 process_medical_query called with: '{user_input}'")
-
-        clear_diagnosis = self.check_clear_diagnosis()
-        if clear_diagnosis:
-            response = self.generate_final_recommendation(
-                clear_diagnosis["condition"], 
-                clear_diagnosis["confidence"]
-            )
-            # Reset conversation
-            self.reset_conversation()
-            return response, False
-        
-        old_value = self.is_medical_chat
-        self.is_medical_chat = True
-        if not self.initialized:
-            print("❌ Chatbot not initialized")
-            return "I'm sorry, the medical assistant is not properly initialized. Please try again later.", False
-            
-        try:
-            # Add user input to history
-            self.chat_history.append(f"User: {user_input}")
-             # Store the last question for context tracking
-            current_last_question = self.last_question
-
-            new_symptoms = self.extract_symptoms(user_input)
-            print(f"✅ Extracted symptoms: {new_symptoms}")
-            self.user_symptoms.extend(new_symptoms)
-            self.user_symptoms = list(set(self.user_symptoms))  # Remove duplicates
-            
-            # Extract information from user response
-           # print("🔍 Extracting answered questions...")
-            extracted_info = self.extract_answered_questions(user_input)
-            for key, value in extracted_info.items():
-                if value:  # Only update if we got a value
-                    self.user_info[key] = value
-            # DEBUG: Print extracted info to see what's being captured
-            print(f"🔍 Extracted info: {extracted_info}")
-            print(f"🔍 User info: {self.user_info}")
-            print(f"🔍 User symptoms: {self.user_symptoms}")
-                
-            # Check if we have enough information for diagnosis
-            has_fever = any(s in self.user_symptoms for s in ["fever", "high fever", "mild fever"])
-            has_headache = "headache" in self.user_symptoms or "severe headache" in self.user_symptoms
-            has_travel_history = self.user_info["travel_history"] is not None
-            has_fever_info = self.user_info["fever_temperature"] is not None and self.user_info["fever_duration"] is not None
-            
-            # If we have fever + headache + travel to dengue area, we should provide diagnosis
-            if (has_fever and has_headache and has_travel_history and 
-                self.user_info["travel_history"] in self.dengue_prone_areas and
-                has_fever_info):
-                
-                # Find dengue-related conditions
-                dengue_conditions = [cond for cond in self.medical_data 
-                                   if "dengue" in cond.get("condition", "").lower()]
-                
-                if dengue_conditions:
-                    # Select the most appropriate dengue condition based on symptoms
-                    best_dengue_match = None
-                    best_score = 0
-                    
-                    for condition in dengue_conditions:
-                        score = self.calculate_symptom_score(self.user_symptoms, condition["symptoms"])
-                        if score > best_score:
-                            best_score = score
-                            best_dengue_match = condition
-                    
-                    if best_dengue_match:
-                        response = self.generate_final_recommendation(best_dengue_match, best_score)
-                        self.chat_history.append(f"Bot: {response}")
-                        
-                        # Reset for next conversation
-                        self.is_medical_chat = False
-                        self.asked_questions.clear()
-                        self.current_follow_ups = []
-                        self.user_symptoms = []
-                        self.user_info = {key: None for key in self.user_info}
-                        self.diagnostic_stage = "initial"
-                        
-                        return response, False
-            
-            # Find best matching conditions
-            print("🔍 Finding best matches...")
-            best_matches = self.find_best_matches(self.user_symptoms)
-            print(f"✅ Best matches found: {len(best_matches)}")
-            #if best_matches:
-               # for i, match in enumerate(best_matches):
-                 #   print(f"   Match {i+1}: {match['condition'].get('condition', 'Unknown')} - Score: {match['score']:.1f}%")
-               
-            # Update diagnostic stage
-            if len(self.user_symptoms) < 3:
-                self.diagnostic_stage = "initial"
-            elif best_matches and best_matches[0]["score"] >= 80:
-                self.diagnostic_stage = "confirmation"
-            else:
-                self.diagnostic_stage = "symptom_clarification"
-            
-           # If we have a high-confidence match, provide final recommendation
-            if self.diagnostic_stage == "confirmation" and best_matches:
-                best_match = best_matches[0]
-                
-                # SAFETY CHECK: Don't diagnose emergency conditions without multiple specific symptoms
-                condition_name = best_match["condition"].get("condition", "").lower()
-                urgency = best_match["condition"].get("urgency", "").lower()
-                
-                # For emergency/dangerous conditions, require at least 2 specific symptoms
-                if urgency in ["emergency", "dangerous", "urgent"]:
-                    specific_symptoms = [s for s in best_match["condition"]["symptoms"] 
-                                    if self.symptom_weights.get(s, 5) >= 7]
-                    matched_specific = len([s for s in self.user_symptoms if s in specific_symptoms])
-                    
-                    if matched_specific < 2:
-                        print(f"⚠️ SAFETY CHECK: Emergency condition '{condition_name}' needs at least 2 specific symptoms, but only has {matched_specific}")
-                        # Don't provide final diagnosis, ask more questions instead
-                        self.diagnostic_stage = "symptom_clarification"
-                
-                # Only provide final diagnosis if it passes safety checks
-                if self.diagnostic_stage == "confirmation":
-                    response = self.generate_final_recommendation(best_match["condition"], best_match["score"])
-                
-                # Add bot response to history
-                self.chat_history.append(f"Bot: {response}")
-                
-                # Reset for next conversation
-                self.is_medical_chat = False
-                self.asked_questions.clear()
-                self.current_follow_ups = []
-                self.user_symptoms = []
-                self.user_info = {key: None for key in self.user_info}
-                self.diagnostic_stage = "initial"
-                
-                return response, False
-            
-            # Otherwise, ask diagnostic questions
-            #print("🔍 Getting diagnostic questions...")
-            diagnostic_questions = self.get_diagnostic_questions(best_matches)
-            #print(f"✅ Diagnostic questions: {diagnostic_questions}")
-        
-            if diagnostic_questions:
-                # Store the question we're about to ask
-                self.last_question = diagnostic_questions[0]
-                
-                # Use empathetic introduction
-                empathetic_intro = self.generate_empathetic_response()
-                question = empathetic_intro + diagnostic_questions[0]
-                self.asked_questions.add(diagnostic_questions[0])
-                self.current_follow_ups = diagnostic_questions[1:]
-                 # Add bot response to history
-                self.chat_history.append(f"Bot: {question}")
-            
-            # If we detected travel but no location, ask for specific location
-            if (self.user_info.get("travel_mentioned") and 
-                not self.user_info.get("travel_history") and
-                self.user_info.get("travel_history") != "No travel"):
-                diagnostic_questions.insert(0, "Which specific area did you travel to?")
-            
-            # If we have fever but no temperature details, ask
-            if any(s in self.user_symptoms for s in ["fever", "high fever", "mild fever"]):
-                if self.user_info["fever_temperature"] is None:
-                    diagnostic_questions.insert(0, "What is your current temperature?")
-                if self.user_info["fever_duration"] is None:
-                    diagnostic_questions.insert(0, "How long have you had fever?")
-            
-            if diagnostic_questions:
-                # Use empathetic introduction
-                empathetic_intro = self.generate_empathetic_response()
-                question = empathetic_intro + diagnostic_questions[0]
-                
-                # Store the question to track what we've asked
-                self.asked_questions.add(diagnostic_questions[0])
-                self.current_follow_ups = diagnostic_questions[1:]  # Store remaining questions
-                
-                # Add bot response to history
-                self.chat_history.append(f"Bot: {question}")
-                
-                self.chat_history.append(f"Bot: {question}")
-                #print(f"✅ Returning question: {question[:100]}...")
-                #print(f"✅ Setting last_question to: '{diagnostic_questions[0]}'")
-                #print(f"✅ Returning question: {question[:100]}...")
-                
-                return question, True
-            
-            # If we don't have questions but still need more info
-            if not diagnostic_questions and len(self.user_symptoms) < 3:
-                empathetic_prompts = [
-    # Understanding & Clarifying
-    "I want to make sure I understand your situation correctly. Could you describe your symptoms in more detail?",
-    "Let me help you get the right care. Please tell me more about what you're experiencing.",
-    "I'm here to help you figure this out. Can you provide more details about your symptoms?",
-    "I understand this might be worrying. Let's work through it together. What other symptoms are you experiencing?",
-    
-    # Reassurance
-    "That sounds uncomfortable. You're not alone—can you share a bit more about what you're going through?",
-    "I hear your concern. Could you walk me through when these symptoms started?",
-    "It’s important we get a clear picture. Can you tell me if anything makes your symptoms better or worse?",
-    
-    # Encouragement
-    "You're doing the right thing by talking about this. What other changes have you noticed?",
-    "Thank you for sharing this with me. Can you describe the severity or frequency of your symptoms?",
-    "I want to make sure we cover everything. Are there any other symptoms or details you think I should know?",
-    
-    # Compassionate Support
-    "I can imagine this feels difficult. Let's take it step by step—what symptom bothers you the most?",
-    "Your health matters, and I want to support you. Could you explain how these symptoms affect your daily life?",
-    "That must be tough to deal with. When did you first notice these symptoms?"
-]
-
-                
-                response = random.choice(empathetic_prompts)
-                self.chat_history.append(f"Bot: {response}")
-                #print(f"✅ Returning prompt for more info: {response}")
-                return response, True
-            
-            # If we reach here, we don't have enough information but can't ask more questions
-            # Provide gentle guidance to see a doctor
-            empathetic_responses = [
-    # General reassurance + guidance
-    "I understand you're concerned about your symptoms. Based on the information provided, I recommend consulting a healthcare professional for a proper evaluation.",
-    "I've done my best to understand your symptoms, but I think it would be best for you to see a doctor for a definitive diagnosis.",
-    "Your symptoms deserve proper medical attention. I encourage you to consult with a healthcare provider who can examine you properly.",
-    
-    # Supportive & caring
-    "I know it can be worrying to have these symptoms. You're not alone—please reach out to a healthcare professional who can help you further.",
-    "Your health and peace of mind are important. A doctor will be able to give you the best advice and care.",
-    "Thank you for sharing these details. To ensure you get the right treatment, I recommend contacting a healthcare provider.",
-    
-    # Safety-focused
-    "Since symptoms can sometimes overlap between different conditions, it's safest to have a medical professional evaluate your situation.",
-    "I can’t provide a diagnosis, but a doctor will be able to examine you properly and suggest the right treatment.",
-    "It’s important to get clarity on what’s causing your symptoms. Please consult with a healthcare professional as soon as you can.",
-    
-    # Encouraging action
-    "You're taking the right step by discussing your symptoms. Now I encourage you to follow up with a medical professional for a thorough check.",
-    "It’s always better to be safe when it comes to your health. Please schedule a visit with a doctor to get a proper evaluation.",
-    "Your well-being matters. A healthcare provider will be able to guide you with the most accurate advice."
-]
-
-            
-            response = random.choice(empathetic_responses)
-            self.chat_history.append(f"Bot: {response}")
-            print(f"✅ Returning doctor recommendation: {response}")
-            return response, False
-            
-        except Exception as e:
-            error_msg = f"I apologize, but I encountered an error processing your medical query. Please try again or consult a healthcare professional."
-            self.chat_history.append(f"Bot: {error_msg}")
-            print(f"❌ Error in process_medical_query: {e}")
-            import traceback
-            traceback.print_exc()
-            return error_msg, False"""
 
     def process_medical_query(self, user_input: str) -> Tuple[str, bool]:
         print(f"🔍 process_medical_query called with: '{user_input}'")

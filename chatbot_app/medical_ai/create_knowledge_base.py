@@ -10,10 +10,10 @@ symptom_weights = {
     "difficulty breathing": 9, "severe dehydration": 9, "bleeding gums": 8, "nosebleeds": 8, 
     "severe abdominal pain": 9, "persistent vomiting": 9, "lethargy": 8, "restlessness": 7,
     "sudden drop in temperature": 9, "confusion": 9, "very high fever": 8, "severe bleeding": 10,
-    "stiff neck": 8, "light sensitivity": 7, "severe dizziness": 8, "fainting": 9,
+    "stiff neck": 8, "light sensitivity": 7, "severe dizziness": 8, "fainting": 9, "severe cough": 7,"persistent cough": 7,
     # New high urgency symptoms
     "sudden chest tightness": 9, "severe shortness of breath": 9, "uncontrolled bleeding": 10,
-    "sudden severe headache": 9, "loss of consciousness": 10, "rapid heartbeat": 8,
+    "sudden severe headache": 9, "loss of consciousness": 10, "rapid heartbeat": 8,"difficulty breathing": 8, "chest pain": 7, 
     "severe allergic reaction": 9, "anaphylaxis": 10, "seizures": 10, "sudden vision loss": 9,
     
     # Dengue specific symptoms
@@ -107,6 +107,9 @@ symptom_mapping = {
     "light sensitivity": ["light sensitivity", "sensitive to light", "photophobia", "lights hurt eyes", "bright lights bother me", "eyes sensitive to light", "can't stand bright lights", "light intolerance", "glare sensitivity", "eyes hurt in light", "photophobic", "squinting in light", "light makes eyes ache", "aversion to light", "bright light pain", "eyes can't handle light", "light bothers eyes", "sensitive to bright light", "lights too bright", "eyes hurt with light", "glare hurts eyes", "light sensitivity in eyes", "bright light discomfort", "eyes squinting in light", "painful light exposure"],
     "loss of appetite": ["loss of appetite", "not hungry", "no desire to eat", "reduced appetite", "appetite gone", "no interest in food", "lack of hunger", "anorexia", "don't feel like eating", "appetite loss", "zero appetite", "food aversion", "not eating much", "decreased hunger", "poor appetite", "no urge to eat", "food doesn't appeal", "can't eat", "hunger gone", "not wanting food", "appetite really low", "no taste for food", "eating feels off", "no craving for food", "feeling full without eating"],
     "swollen lymph nodes": ["swollen lymph nodes", "swollen glands", "enlarged lymph nodes", "lumps in neck", "swollen nodes", "lymph node swelling", "glands puffed up", "tender swollen glands", "neck lumps", "enlarged glands", "swollen lymphs", "lymphadenopathy", "bulging lymph nodes", "swollen under jaw", "painful swollen nodes", "lumpy glands", "swollen neck glands", "big lymph nodes", "tender lymph nodes", "swollen lumps in neck", "glands feel big", "lymph node enlargement", "swollen and sore glands", "puffy lymph nodes", "neck glands swollen"],
+    "sneezing": ["sneezing", "sneezes", "achoo"],
+    "productive cough": ["productive cough", "cough with phlegm", "mucus cough"],
+    "dry cough": ["dry cough", "non-productive cough", "tickly cough"],
     "dehydration": ["dehydration", "dehydrated", "dry mouth", "excessive thirst", "dark urine", "feeling thirsty all the time", "dry skin", "lack of fluids", "thirsty and dry", "dehydrated feeling", "not enough water", "sunken eyes", "dry lips", "thirstiness", "fluid loss", "parched", "really thirsty", "feeling dried out", "low hydration", "thirsty constantly", "dry and thirsty", "no moisture in mouth", "dehydration symptoms", "craving water", "body feels dry"]
 }
 
@@ -156,7 +159,7 @@ medical_data = [
         "condition": "Skin Condition"
     },
     {
-        "symptoms": ["fever", "cough", "sore throat", "runny nose", "body aches", "mild fever", "slight runny nose", "occasional sneezing", "mild headache"],
+        "symptoms": ["fever", "cough", "sore throat", "runny nose", "body aches", "sneezing"],
         "specialty": "Primary Care / General Practice",
         "suggested_action": "Schedule an appointment with your primary care doctor or visit an Urgent Care clinic for evaluation. Rest and hydrate.",
         "urgency": "Routine",
@@ -174,7 +177,7 @@ medical_data = [
         "condition": "Headache"
     },
     {
-        "symptoms": ["high fever", "severe body aches", "persistent cough", "extreme fatigue", "very high fever", "difficulty breathing", "chest pain", "severe dehydration", "confusion"],
+        "symptoms": ["high fever", "body aches","cough", "runny nose","sore throat", "persistent cough", "fatigue", "very high fever", "difficulty breathing", "chest pain", "severe dehydration","muscle pain", "severe body aches","extreme fatigue","severe cough","debilitating muscle pain" ],
         "specialty": "Primary Care / Emergency Medicine",
         "suggested_action": "Seek medical attention. For severe symptoms, go to emergency care immediately.",
         "urgency": "Intermediate to Dangerous",
@@ -192,7 +195,7 @@ medical_data = [
         "condition": "Chikungunya Fever"
     },
     {
-        "symptoms": ["fever", "headache", "body aches", "rash", "high fever", "severe headache", "pain behind eyes" , "vomiting", "sudden drop in temperature", "severe abdominal pain", "persistent vomiting", "bleeding gums", "nosebleeds", "bleeding", "lethargy", "restlessness"],
+        "symptoms": ["fever", "headache", "body aches", "rash", "high fever", "severe headache", "pain behind eyes" , "vomiting", "sudden drop in temperature", "severe abdominal pain", "vomiting", "bleeding gums", "nosebleeds", "bleeding", "lethargy", "restlessness"],
         "specialty": "Infectious Disease / Emergency Medicine",
         "suggested_action": "Seek medical attention. For severe symptoms with bleeding or shock, go to emergency room immediately.",
         "urgency": "Normal to Emergency",
