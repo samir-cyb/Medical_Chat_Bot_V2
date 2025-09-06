@@ -1,0 +1,152 @@
+{
+  "metrics": {
+    "total_tests": 14,
+    "successful_tests": 1,
+    "accuracy": 7.142857142857142,
+    "average_confidence": 80.0,
+    "average_match_confidence": 100.0,
+    "final_diagnosis_reached": 3
+  },
+  "detailed_results": [
+    {
+      "name": "Test 1",
+      "expected": "Dengue Fever",
+      "success": true,
+      "confidence": 84.0,
+      "match_confidence": 100,
+      "condition_detected": true,
+      "final_diagnosis": true,
+      "error": null
+    },
+    {
+      "name": "Test 2",
+      "expected": "Dengue Fever",
+      "success": false,
+      "confidence": 84.0,
+      "match_confidence": 100,
+      "condition_detected": true,
+      "final_diagnosis": true,
+      "error": null
+    },
+    {
+      "name": "Test 3",
+      "expected": "Common Cold or Flu",
+      "success": false,
+      "confidence": 0,
+      "match_confidence": 0,
+      "condition_detected": false,
+      "final_diagnosis": false,
+      "error": null
+    },
+    {
+      "name": "Test 4",
+      "expected": "Appendicitis",
+      "success": false,
+      "confidence": 0,
+      "match_confidence": 0,
+      "condition_detected": false,
+      "final_diagnosis": false,
+      "error": null
+    },
+    {
+      "name": "Test 5",
+      "expected": "Chikungunya Fever",
+      "success": false,
+      "confidence": 72.0,
+      "match_confidence": 100,
+      "condition_detected": true,
+      "final_diagnosis": true,
+      "error": null
+    },
+    {
+      "name": "Test 6",
+      "expected": "Influenza (Flu) or Severe Respiratory Infection",
+      "success": false,
+      "confidence": 0,
+      "match_confidence": 0,
+      "condition_detected": false,
+      "final_diagnosis": false,
+      "error": null
+    },
+    {
+      "name": "Test 7",
+      "expected": "Heart Attack",
+      "success": false,
+      "confidence": 0,
+      "match_confidence": 0,
+      "condition_detected": false,
+      "final_diagnosis": false,
+      "error": null
+    },
+    {
+      "name": "Test 8",
+      "expected": "Malaria",
+      "success": false,
+      "confidence": 0,
+      "match_confidence": 0,
+      "condition_detected": false,
+      "final_diagnosis": false,
+      "error": null
+    },
+    {
+      "name": "Test 9",
+      "expected": "Acid Reflux / GERD",
+      "success": false,
+      "confidence": 0,
+      "match_confidence": 0,
+      "condition_detected": false,
+      "final_diagnosis": false,
+      "error": null
+    },
+    {
+      "name": "Test 10",
+      "expected": "Headache",
+      "success": false,
+      "confidence": 0,
+      "match_confidence": 100,
+      "condition_detected": true,
+      "final_diagnosis": false,
+      "error": null
+    },
+    {
+      "name": "Test 11",
+      "expected": "Anxiety / Panic Attack",
+      "success": false,
+      "confidence": 0,
+      "match_confidence": 0,
+      "condition_detected": false,
+      "final_diagnosis": false,
+      "error": null
+    },
+    {
+      "name": "Test 12",
+      "expected": "Common Cold or Flu",
+      "success": false,
+      "confidence": 0,
+      "match_confidence": 0,
+      "condition_detected": false,
+      "final_diagnosis": false,
+      "error": null
+    },
+    {
+      "name": "Test 13",
+      "expected": "Dengue Fever",
+      "success": false,
+      "confidence": 0,
+      "match_confidence": 100,
+      "condition_detected": true,
+      "final_diagnosis": false,
+      "error": null
+    },
+    {
+      "name": "Test 14",
+      "expected": "Influenza (Flu) or Severe Respiratory Infection",
+      "success": false,
+      "confidence": 0,
+      "match_confidence": 0,
+      "condition_detected": false,
+      "final_diagnosis": false,
+      "error": null
+    }
+  ]
+}

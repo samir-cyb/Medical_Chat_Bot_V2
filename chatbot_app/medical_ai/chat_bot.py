@@ -622,7 +622,8 @@ class MedicalChatBot:
 
     def calculate_symptom_score(self, user_symptoms: List[str], condition_symptoms: List[str]) -> float:
         """Calculate a weighted match score between user symptoms and condition symptoms"""
-        
+        condition_name = str(condition_symptoms).lower()
+        print(f"🔍 [calculate_symptom_score] Condition being scored: '{condition_name}'")
         # 🔥 NEW CODE: Remove duplicate fever symptoms
         user_symptoms = user_symptoms.copy()  # Don't modify original list
         if "high fever" in user_symptoms and "fever" in user_symptoms:
@@ -727,7 +728,7 @@ class MedicalChatBot:
 
         # Bonus for Common Cold with multiple matching symptoms
         if "common cold" in condition_name or "cold" in condition_name:
-            cold_symptoms = ["runny nose", "sore throat", "sneezing", "cough", "productive cough", "nasal congestion"]
+            cold_symptoms = ["runny nose", "sore throat", "sneezing", "cough", "productive cough", "nasal congestion","headache","dry cough"]
             matched_cold_symptoms = [s for s in user_symptoms if s in cold_symptoms]
             
             if len(matched_cold_symptoms) >= 2:
@@ -1126,6 +1127,12 @@ class MedicalChatBot:
                     # Replace your common_cold_questions with this:
                     if any("common cold" in name for name in condition_names) or any("cold" in name for name in condition_names):
                         common_cold_questions = []
+                        
+                        if ("headache" not in self.user_symptoms and 
+                            "severe headache" not in self.user_symptoms and
+                            "Do you have a headache?" not in self.asked_questions):
+                            common_cold_questions.append("Do you have a headache?")
+                        differentiating_questions.extend(common_cold_questions)
                         
                         # Only ask about symptoms we don't already know
                         if "runny nose" not in self.user_symptoms and "nasal congestion" not in self.user_symptoms:
@@ -1870,6 +1877,19 @@ class MedicalChatBot:
                     extracted_info["sneezing"] = False
                     if "sneezing" in self.user_symptoms:
                         self.user_symptoms.remove("sneezing")
+                        
+            # Handle headache question
+            elif any(term in last_question_lower for term in ['headache', 'head pain', 'head ache', 'migraine']):
+                if response_type == "affirmative":
+                    extracted_info["headache"] = True
+                    if "headache" not in self.user_symptoms:
+                        self.user_symptoms.append("headache")
+                    print(f"✅ [extract_answered_questions] Added headache symptom")
+                elif response_type == "negative":
+                    extracted_info["headache"] = False
+                    if "headache" in self.user_symptoms:
+                        self.user_symptoms.remove("headache")
+                    print(f"✅ [extract_answered_questions] Removed headache symptom")
 
             #elif any(term in last_question_lower for term in ['productive cough', 'phlegm', 'mucus']):
              #   if response_type == "affirmative":
@@ -2388,54 +2408,34 @@ class MedicalChatBot:
             # Find best matching conditions
             print("🔍 Finding best matches...")
             best_matches = self.find_best_matches(self.user_symptoms)
-            print(f"✅ Best matches found: {len(best_matches)}")
-            
-            
-            
-            
-            # Update diagnostic stage
+            print(f"✅ Best matches found: {len(best_matches)}")     
+                   
+            # Update diagnostic stage with DYNAMIC THRESHOLDS
             if len(self.user_symptoms) < 3:
                 self.diagnostic_stage = "initial"
-            elif best_matches and best_matches[0]["score"] >= 80:
-                self.diagnostic_stage = "confirmation"
+            elif best_matches:
+                best_match = best_matches[0]
+                condition_name = best_match["condition_name"].lower()
+                
+                # Set different thresholds for different conditions
+                if "common cold" in condition_name or "cold" in condition_name:
+                    diagnosis_threshold = 70  # Lower threshold for common cold
+                elif any(term in condition_name for term in ["heart attack", "appendicitis", "stroke", "emergency"]):
+                    diagnosis_threshold = 80  # Higher threshold for emergencies
+                else:
+                    diagnosis_threshold = 80  # Default threshold
+                
+                print(f"📊 Dynamic threshold: {diagnosis_threshold}% for {condition_name} (score: {best_match['score']}%)")
+                
+                if best_match["score"] >= diagnosis_threshold:
+                    self.diagnostic_stage = "confirmation"
+                    print(f"✅ Reaching diagnosis threshold: {best_match['score']}% >= {diagnosis_threshold}%")
+                else:
+                    self.diagnostic_stage = "symptom_clarification"
+                    print(f"⚠️ Below diagnosis threshold: {best_match['score']}% < {diagnosis_threshold}%")
             else:
                 self.diagnostic_stage = "symptom_clarification"
             
-            # If we have a high-confidence match, provide final recommendation
-            """if self.diagnostic_stage == "confirmation" and best_matches:
-                best_match = best_matches[0]
-                
-                # SAFETY CHECK: Don't diagnose emergency conditions without multiple specific symptoms
-                condition_name = best_match["condition"].get("condition", "").lower()
-                urgency = best_match["condition"].get("urgency", "").lower()
-                
-                # For emergency/dangerous conditions, require at least 2 specific symptoms
-                if urgency in ["emergency", "dangerous", "urgent"]:
-                    specific_symptoms = [s for s in best_match["condition"]["symptoms"] 
-                                    if self.symptom_weights.get(s, 5) >= 7]
-                    matched_specific = len([s for s in self.user_symptoms if s in specific_symptoms])
-                    
-                    if matched_specific < 2:
-                        print(f"⚠️ SAFETY CHECK: Emergency condition '{condition_name}' needs at least 2 specific symptoms, but only has {matched_specific}")
-                        # Don't provide final diagnosis, ask more questions instead
-                        self.diagnostic_stage = "symptom_clarification"
-                
-                # Only provide final diagnosis if it passes safety checks
-                if self.diagnostic_stage == "confirmation":
-                    response = self.generate_final_recommendation(best_match["condition"], best_match["score"])
-                
-                # Add bot response to history
-                self.chat_history.append(f"Bot: {response}")
-                
-                # Reset for next conversation
-                self.is_medical_chat = False
-                self.asked_questions.clear()
-                self.current_follow_ups = []
-                self.user_symptoms = []
-                self.user_info = {key: None for key in self.user_info}
-                self.diagnostic_stage = "initial"
-                
-                return response, False"""
             
             if self.diagnostic_stage == "confirmation" and best_matches:
                 best_match = best_matches[0]
@@ -2457,8 +2457,18 @@ class MedicalChatBot:
                         self.diagnostic_stage = "symptom_clarification"
                         safety_check_passed = False
                 
-                # Only provide final diagnosis if it passes safety checks
-                if self.diagnostic_stage == "confirmation" and safety_check_passed:
+                # DYNAMIC THRESHOLD CHECK: Only provide diagnosis if meets condition-specific threshold
+                condition_name = best_match["condition_name"].lower()
+                if "common cold" in condition_name or "cold" in condition_name:
+                    required_score = 65
+                elif any(term in condition_name for term in ["heart attack", "appendicitis", "stroke", "emergency"]):
+                    required_score = 85
+                else:
+                    required_score = 80
+                
+                # Only provide final diagnosis if it passes safety checks AND meets dynamic threshold
+                if (self.diagnostic_stage == "confirmation" and safety_check_passed and 
+                    best_match["score"] >= required_score):
                     response = self.generate_final_recommendation(best_match["condition"], best_match["score"])
                     
                     # Add bot response to history

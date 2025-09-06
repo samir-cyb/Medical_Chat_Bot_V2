@@ -1,0 +1,183 @@
+[
+  {
+    "name": "Dengue Fever Case - Classic Symptoms",
+    "conversation": [
+      "I have high fever for 4 days",
+      "My temperature is 103.5",
+      "Yes, I have a severe headache",
+      "I was in Dhaka last week",
+      "Yes, I have pain behind my eyes",
+      "No, I don't have any bleeding",
+      "I have some muscle pain but not too bad"
+    ],
+    "expected_condition": "Dengue Fever",
+    "expected_confidence": 75
+  },
+  {
+    "name": "Dengue Fever Case - With Bleeding",
+    "conversation": [
+      "I've had high fever for 5 days",
+      "About 102 degrees",
+      "Yes, terrible headache",
+      "I live in Dhaka",
+      "My gums are bleeding when I brush",
+      "Yes, I have some red spots on my skin"
+    ],
+    "expected_condition": "Dengue Fever",
+    "expected_confidence": 85
+  },
+  {
+    "name": "Common Cold Case", 
+    "conversation": [
+      "I have a runny nose and cough",
+      "Yes, I have a sore throat",
+      "No fever",
+      "It started 2 days ago",
+      "No, I don't have body aches",
+      "Yes, I'm sneezing a lot"
+    ],
+    "expected_condition": "Common Cold or Flu",
+    "expected_confidence": 70
+  },
+  {
+    "name": "Appendicitis Case",
+    "conversation": [
+      "I have severe pain in my lower right abdomen",
+      "The pain is about 8 out of 10",
+      "Yes, I feel nauseous",
+      "It started yesterday and has been getting worse",
+      "No, I don't have fever",
+      "Yes, it hurts more when I move"
+    ],
+    "expected_condition": "Appendicitis",
+    "expected_confidence": 80
+  },
+  {
+    "name": "Chikungunya Case",
+    "conversation": [
+      "I have high fever and joint pain",
+      "My temperature is 102",
+      "Yes, my joints are very painful",
+      "I was in Tejgaon recently",
+      "Yes, my wrists and knees are swollen",
+      "The fever started 3 days ago"
+    ],
+    "expected_condition": "Chikungunya Fever",
+    "expected_confidence": 75
+  },
+  {
+    "name": "Influenza Case",
+    "conversation": [
+      "I have fever, cough and body aches",
+      "Temperature is 101.5",
+      "Yes, I have extreme fatigue",
+      "No, I haven't traveled recently",
+      "Yes, I have a persistent cough",
+      "It started suddenly 2 days ago"
+    ],
+    "expected_condition": "Influenza (Flu) or Severe Respiratory Infection",
+    "expected_confidence": 75
+  },
+  {
+    "name": "Heart Attack Case",
+    "conversation": [
+      "I have chest pain",
+      "The pain is severe, about 9 out of 10",
+      "Yes, it's radiating to my left arm",
+      "Yes, I'm sweating and feeling nauseous",
+      "Yes, I'm having difficulty breathing",
+      "No, I don't have fever"
+    ],
+    "expected_condition": "Heart Attack",
+    "expected_confidence": 85
+  },
+  {
+    "name": "Malaria Case",
+    "conversation": [
+      "I have fever with chills",
+      "Temperature goes up to 103 then I sweat",
+      "Yes, this happens every day",
+      "I was in Bandarban last month",
+      "Yes, I have headache and nausea",
+      "The cycles have been going on for 5 days"
+    ],
+    "expected_condition": "Malaria",
+    "expected_confidence": 80
+  },
+  {
+    "name": "GERD/Acid Reflux Case",
+    "conversation": [
+      "I have chest discomfort",
+      "It feels like burning in my chest",
+      "Yes, especially after eating",
+      "No, it doesn't radiate to my arm",
+      "Yes, I sometimes have acid taste in my mouth",
+      "No breathing difficulties"
+    ],
+    "expected_condition": "Acid Reflux / GERD",
+    "expected_confidence": 70
+  },
+  {
+    "name": "Migraine Case",
+    "conversation": [
+      "I have a severe headache",
+      "It's on one side of my head",
+      "Yes, it's throbbing pain",
+      "Yes, I'm sensitive to light",
+      "No, I don't have fever",
+      "I've had these before but this is worse"
+    ],
+    "expected_condition": "Headache",
+    "expected_confidence": 65
+  },
+  {
+    "name": "Anxiety/Panic Attack Case",
+    "conversation": [
+      "I have chest tightness",
+      "No, it's not exactly pain, more like pressure",
+      "Yes, my heart is racing",
+      "Yes, I'm feeling very anxious",
+      "No, it doesn't radiate anywhere",
+      "Yes, I'm having trouble catching my breath"
+    ],
+    "expected_condition": "Anxiety / Panic Attack",
+    "expected_confidence": 70
+  },
+  {
+    "name": "Mixed Symptoms - Low Confidence",
+    "conversation": [
+      "I have a mild headache",
+      "No fever",
+      "A little tired but not too bad",
+      "No other symptoms really",
+      "It started today"
+    ],
+    "expected_condition": "Common Cold or Flu",
+    "expected_confidence": 50
+  },
+  {
+    "name": "Dengue Warning Signs Case",
+    "conversation": [
+      "I had dengue symptoms but now fever is gone",
+      "Yes, I feel very weak and restless",
+      "I have severe abdominal pain",
+      "Yes, I'm vomiting persistently",
+      "My gums are bleeding slightly"
+    ],
+    "expected_condition": "Dengue Fever",
+    "expected_confidence": 90
+  },
+  {
+    "name": "Severe Dehydration Case",
+    "conversation": [
+      "I've been vomiting and have diarrhea",
+      "For about 2 days",
+      "Yes, I feel very weak and dizzy",
+      "I have dry mouth and I'm very thirsty",
+      "No, I don't have fever",
+      "I haven't been able to keep fluids down"
+    ],
+    "expected_condition": "Influenza (Flu) or Severe Respiratory Infection",
+    "expected_confidence": 65
+  }
+]
