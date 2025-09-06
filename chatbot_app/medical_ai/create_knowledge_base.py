@@ -22,7 +22,7 @@ symptom_weights = {
     "abdominal pain with nausea": 7,
     "fever" :5, "worsening pain": 6, "sweating": 7,"nausea":5,
     # Dengue specific symptoms
-    "high fever": 8, "severe headache": 7, "pain behind eyes": 8, "severe muscle pain": 7,
+    "high fever": 8, "severe headache": 6, "pain behind eyes": 8, "severe muscle pain": 7,
     "severe joint pain": 7, "skin rash": 6, "mild bleeding": 7, "low platelet count": 8,
     "easy bruising": 7, "petechiae": 8, "red spots on skin": 6, "increased thirst": 5,
     # New dengue-specific symptoms

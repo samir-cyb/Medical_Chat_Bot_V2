@@ -663,7 +663,7 @@ class MedicalChatBot:
         specificity_bonus = 0
         for symptom in matched_symptoms:
             weight = self.symptom_weights.get(symptom, 5)
-            if weight >= 6:  # Rare/specific symptom
+            if weight >= 7:  # Rare/specific symptom
                 specificity_bonus += 10
                 print(f"⭐ [calculate_symptom_score] Rare symptom bonus: {symptom} (+10)")
         
@@ -738,8 +738,8 @@ class MedicalChatBot:
                 has_fever = any(symptom in condition_str for symptom in ["high fever", "fever", "persistent high fever"])
                 
                 if has_fever and has_dengue_specific:  # BOTH required for dengue
-                    travel_bonus = 20
-                    print(f"✈️ Travel bonus for DENGUE (fever + specific symptom): +20")
+                    travel_bonus = 10
+                    print(f"✈️ Travel bonus for DENGUE (fever + specific symptom): +10")
             
             # Check if this looks like CHIKUNGUNYA
             if self.user_info["travel_history"] in self.chikungunya_prone_areas:
@@ -748,8 +748,8 @@ class MedicalChatBot:
                 has_fever = any(symptom in condition_str for symptom in ["high fever", "fever"])
                 
                 if has_fever and has_joint_symptoms:  # BOTH required for chikungunya
-                    travel_bonus = 20
-                    print(f"✈️ Travel bonus for CHIKUNGUNYA (fever + joint pain): +20")
+                    travel_bonus = 10
+                    print(f"✈️ Travel bonus for CHIKUNGUNYA (fever + joint pain): +10")
             
             # Check if this looks like MALARIA
             if self.user_info["travel_history"] in self.malaria_prone_areas:
@@ -758,8 +758,8 @@ class MedicalChatBot:
                 has_fever = any(symptom in condition_str for symptom in ["high fever", "fever"])
                 
                 if has_fever and has_malaria_pattern:  # BOTH required for malaria
-                    travel_bonus = 20
-                    print(f"✈️ Travel bonus for MALARIA (fever + chills): +20")
+                    travel_bonus = 10
+                    print(f"✈️ Travel bonus for MALARIA (fever + chills): +10")
         
         # 6. Calculate final score
         final_score = initial_score + travel_bonus
