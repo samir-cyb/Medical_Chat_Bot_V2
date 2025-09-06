@@ -9,7 +9,6 @@
                 "abdominal pain with nausea",
                 "rebound tenderness",
                 "abdominal pain",
-                "fever",
                 "nausea",
                 "vomiting",
                 "loss of appetite"
@@ -52,9 +51,15 @@
                 "fever",
                 "cough",
                 "sore throat",
+                "productive cough",
                 "runny nose",
                 "body aches",
-                "sneezing"
+                "sneezing",
+                "dry cough",
+                "headache",
+                "watery eyes",
+                "productive",
+                "dry"
             ],
             "specialty": "Primary Care / General Practice",
             "suggested_action": "Schedule an appointment with your primary care doctor or visit an Urgent Care clinic for evaluation. Rest and hydrate.",
@@ -399,6 +404,8 @@
         "low white blood cell count": 7,
         "severe fatigue with fever": 7,
         "sudden fever onset": 8,
+        "productive cough": 7,
+        "dry cough": 7,
         "high fever with abrupt onset": 7,
         "debilitating joint pain": 9,
         "joint swelling": 7,

@@ -722,8 +722,19 @@ class MedicalChatBot:
                 initial_score *= 1.1
                 print(f"🍽️ [calculate_symptom_score] Gastric condition bonus: Gastric symptoms present. Score increased to {initial_score:.1f}")
         
-        
-        
+        # 6. Add condition-specific bonuses BEFORE travel bonus
+        condition_name = str(condition_symptoms).lower()
+
+        # Bonus for Common Cold with multiple matching symptoms
+        if "common cold" in condition_name or "cold" in condition_name:
+            cold_symptoms = ["runny nose", "sore throat", "sneezing", "cough", "productive cough", "nasal congestion"]
+            matched_cold_symptoms = [s for s in user_symptoms if s in cold_symptoms]
+            
+            if len(matched_cold_symptoms) >= 2:
+                bonus = (len(matched_cold_symptoms) - 1) * 10  # +10% for each symptom beyond 1
+                final_score += min(bonus, 30)  # Cap at +30%
+                print(f"🔼 [calculate_symptom_score] Common Cold bonus: +{min(bonus, 45)}% for {len(matched_cold_symptoms)} symptoms")
+                
         
         # 6. Add travel history bonus AFTER condition adjustments
         travel_bonus = 0
@@ -924,7 +935,7 @@ class MedicalChatBot:
         print(f"Suspected conditions: {[cond['condition_name'] for cond in suspected_conditions]}")
         
         # === ADD THIS EMERGENCY OVERRIDE CODE FIRST ===
-        if suspected_conditions:
+        """if suspected_conditions:
             top_condition = suspected_conditions[0]["condition_name"].lower()
             
             # Find the urgency level for the top condition
@@ -949,12 +960,59 @@ class MedicalChatBot:
                 
                 if new_questions:
                     print(f"DEBUG: Emergency override - returning questions: {new_questions[:2]}")
-                    return new_questions[:2]  # Return first 2 unasked questions
+                    return new_questions[:2] """ # Return first 2 unasked questions
         
         
         
         questions = []
         asked_questions_set = set(self.asked_questions)
+        
+        
+        
+        
+        is_true_emergency = False
+        if suspected_conditions:
+            top_condition = suspected_conditions[0]["condition_name"].lower()
+            
+            # Only trigger emergency override for specific critical conditions
+            true_emergency_conditions = [
+                "heart attack", "appendicitis", "myocardial infarction",
+                "stroke", "pulmonary embolism", "aortic dissection"
+            ]
+            
+            is_true_emergency = any(emerg_cond in top_condition for emerg_cond in true_emergency_conditions)
+            
+            if is_true_emergency and suspected_conditions[0]["score"] < 80:
+                emergency_questions = [
+                    "On a scale of 1-10, how severe is the pain?",
+                    "Are you having difficulty breathing?",
+                    "Do you feel dizzy or faint?", 
+                    "Is the pain spreading to other areas?",
+                    "Are you experiencing sweating or nausea?"
+                ]
+                
+                # Filter out already asked questions
+                new_questions = [q for q in emergency_questions if q not in self.asked_questions]
+                
+                if new_questions:
+                    print(f"DEBUG: TRUE EMERGENCY override - returning questions: {new_questions[:2]}")
+                    return new_questions[:2]  # Return first 2 unasked questions
+        
+        # PRIORITIZE FEVER QUESTIONS WHEN FEVER IS MENTIONED
+        has_fever = any(s in self.user_symptoms for s in ["fever", "high fever", "mild fever"])
+        if has_fever and not is_true_emergency:
+            fever_questions = []
+            
+            if not self.user_info["fever_duration"] and "How long have you had fever?" not in self.asked_questions:
+                fever_questions.append("How long have you had fever?")
+            
+            if not self.user_info["fever_temperature"] and "What is your current temperature?" not in self.asked_questions:
+                fever_questions.append("What is your current temperature?")
+            
+            # If we have fever questions, return them first
+            if fever_questions:
+                print(f"DEBUG: Fever priority - returning questions: {fever_questions[:2]}")
+                return fever_questions[:2]
         
         
         if suspected_conditions and suspected_conditions[0]["condition_name"].lower() == "heart attack":
@@ -1002,6 +1060,13 @@ class MedicalChatBot:
         # Check if we have basic fever info to proceed to specific questions
         has_basic_fever_info = (self.user_info.get("fever_duration") is not None and 
                             self.user_info.get("fever_temperature") is not None)
+        
+        #new change1
+        has_fever = any(s in self.user_symptoms for s in ["fever", "high fever", "mild fever"])
+        has_basic_fever_info = has_basic_fever_info if has_fever else len(self.user_symptoms) >= 2
+        
+        
+        
         
         # STAGE 2: Disease differentiation questions (ONLY after basic info)
         if has_basic_fever_info and suspected_conditions:
@@ -1054,15 +1119,39 @@ class MedicalChatBot:
                             
                         ]
                         differentiating_questions.extend(influenza_questions)
-                        
-                    # Add this section with the other disease-specific questions:
+                    
+                    
+                    
+                    #new change 2    
+                    # Replace your common_cold_questions with this:
                     if any("common cold" in name for name in condition_names) or any("cold" in name for name in condition_names):
-                        common_cold_questions = [
-                            "Do you have runny nose or nasal congestion?",
-                            "Do you have sore throat?",
-                            "Do you have sneezing or watery eyes?",
-                            "Is your cough productive (with phlegm)?"
-                        ]
+                        common_cold_questions = []
+                        
+                        # Only ask about symptoms we don't already know
+                        if "runny nose" not in self.user_symptoms and "nasal congestion" not in self.user_symptoms:
+                            common_cold_questions.append("Do you have runny nose or nasal congestion?")
+                        
+                        if "sore throat" not in self.user_symptoms:
+                            common_cold_questions.append("Do you have sore throat?")
+                        
+                        if "sneezing" not in self.user_symptoms and "watery eyes" not in self.user_symptoms:
+                            common_cold_questions.append("Do you have sneezing or watery eyes?")
+                        
+                        if "cough" in self.user_symptoms:
+                            # Only ask about cough type if we don't already know it
+                            if "productive cough" not in self.user_symptoms and "dry cough" not in self.user_symptoms:
+                                # Ask about productive cough FIRST (simpler to process)
+                                common_cold_questions.append("Is your cough productive (with phlegm)?")
+                        elif "cough" not in self.user_symptoms:  # If no cough mentioned, ask about it
+                            common_cold_questions.append("Do you have a cough?")
+                        
+                        # 🔥 ADD THIS NEW SECTION RIGHT HERE:
+                        # Ask about dry cough if user said NO to productive cough
+                        if (self.user_info.get("productive_cough") is False and 
+                            "dry cough" not in self.user_symptoms and
+                            "Do you have a dry cough?" not in self.asked_questions):
+                            common_cold_questions.append("Do you have a dry cough?")
+                        
                         differentiating_questions.extend(common_cold_questions)
                     
                     # Add unique questions only (limit to 2 per turn)
@@ -1782,14 +1871,35 @@ class MedicalChatBot:
                     if "sneezing" in self.user_symptoms:
                         self.user_symptoms.remove("sneezing")
 
-            elif any(term in last_question_lower for term in ['productive cough', 'phlegm', 'mucus']):
+            #elif any(term in last_question_lower for term in ['productive cough', 'phlegm', 'mucus']):
+             #   if response_type == "affirmative":
+              #      extracted_info["productive_cough"] = True
+               #     self.user_symptoms.append("productive cough")
+                #elif response_type == "negative":
+                 #   extracted_info["productive_cough"] = False
+                  #  if "productive cough" in self.user_symptoms:
+                   #     self.user_symptoms.remove("productive cough")
+                   
+                   
+            elif any(term in last_question_lower for term in ['productive cough', 'cough with phlegm', 'phlegm', 'is your cough productive']):
                 if response_type == "affirmative":
                     extracted_info["productive_cough"] = True
-                    self.user_symptoms.append("productive cough")
+                    if "productive cough" not in self.user_symptoms:
+                        self.user_symptoms.append("productive cough")
+                    # Remove dry cough if it was there (can't be both)
+                    if "dry cough" in self.user_symptoms:
+                        self.user_symptoms.remove("dry cough")
+                    print(f"✅ [extract_answered_questions] Added productive cough symptom")
                 elif response_type == "negative":
                     extracted_info["productive_cough"] = False
+                    # Remove productive cough but KEEP the general cough symptom
                     if "productive cough" in self.user_symptoms:
                         self.user_symptoms.remove("productive cough")
+                    # DON'T set cough=False - keep the general cough symptom!
+                    print(f"✅ [extract_answered_questions] Removed productive cough (but keeping general cough)")
+                    
+                    # ADD THIS: Now ask about dry cough in the next round
+                    self.asked_questions.discard("Do you have a dry cough?")  # Ensure we can ask it
             
             # Add this section with the other symptom handlers:
             elif any(term in last_question_lower for term in ['cough', 'respiratory symptoms', 'breathing problems', 'coughing']):
@@ -2279,6 +2389,9 @@ class MedicalChatBot:
             print("🔍 Finding best matches...")
             best_matches = self.find_best_matches(self.user_symptoms)
             print(f"✅ Best matches found: {len(best_matches)}")
+            
+            
+            
             
             # Update diagnostic stage
             if len(self.user_symptoms) < 3:

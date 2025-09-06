@@ -28,7 +28,7 @@ symptom_weights = {
     # New dengue-specific symptoms
     "abdominal tenderness": 7, "persistent nausea": 6, "mucous membrane bleeding": 8,
     "low white blood cell count": 7, "severe fatigue with fever": 7, "sudden fever onset": 8,
-    
+    "productive cough":7, "dry cough":7,
     # Chikungunya specific symptoms
     "high fever with abrupt onset": 7, "debilitating joint pain": 9, "joint swelling": 7, "maculopapular rash": 6,
     "conjunctival injection": 6, "nausea": 5, "fatigue": 5, "severe joint stiffness": 7,
@@ -171,7 +171,7 @@ malaria_prone_areas = [
 # This is our medical knowledge dataset.
 medical_data = [
     {
-        "symptoms": ["severe pain", "worsening pain" , "sharp pain lower right abdomen", "right lower quadrant pain", "abdominal pain with nausea", "rebound tenderness","abdominal pain","fever","nausea","vomiting","loss of appetite"],
+        "symptoms": ["severe pain", "worsening pain" , "sharp pain lower right abdomen", "right lower quadrant pain", "abdominal pain with nausea", "rebound tenderness","abdominal pain","nausea","vomiting","loss of appetite"],
         "specialty": "Gastroenterology / Emergency Medicine",
         "suggested_action": "Seek immediate medical attention at an Urgent Care or Emergency Room. This could indicate appendicitis, which is a medical emergency.",
         "urgency": "Urgent",
@@ -189,7 +189,7 @@ medical_data = [
         "condition": "Heart Attack"
     },
     {
-        "symptoms": ["fever", "cough", "sore throat", "runny nose", "body aches", "sneezing"],
+        "symptoms": ["fever", "cough", "sore throat", "productive cough", "runny nose", "body aches", "sneezing","dry cough", "headache","watery eyes","productive","dry"],
         "specialty": "Primary Care / General Practice",
         "suggested_action": "Schedule an appointment with your primary care doctor or visit an Urgent Care clinic for evaluation. Rest and hydrate.",
         "urgency": "Routine",
