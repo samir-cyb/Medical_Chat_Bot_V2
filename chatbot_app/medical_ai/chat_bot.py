@@ -2565,23 +2565,58 @@ class MedicalChatBot:
                 return response, True
             
             # If we reach here, we don't have enough information but can't ask more questions
-            empathetic_responses = [
-                "I understand you're concerned about your symptoms. Based on the information provided, I recommend consulting a healthcare professional for a proper evaluation.",
-                "I've done my best to understand your symptoms, but I think it would be best for you to see a doctor for a definitive diagnosis.",
-                "Your symptoms deserve proper medical attention. I encourage you to consult with a healthcare provider who can examine you properly.",
-                "I know it can be worrying to have these symptoms. You're not alone—please reach out to a healthcare professional who can help you further.",
-                "Your health and peace of mind are important. A doctor will be able to give you the best advice and care.",
-                "Thank you for sharing these details. To ensure you get the right treatment, I recommend contacting a healthcare provider.",
-                "Since symptoms can sometimes overlap between different conditions, it's safest to have a medical professional evaluate your situation.",
-                "I can't provide a diagnosis, but a doctor will be able to examine you properly and suggest the right treatment.",
-                "It's important to get clarity on what's causing your symptoms. Please consult with a healthcare professional as soon as you can.",
-                "You're taking the right step by discussing your symptoms. Now I encourage you to follow up with a medical professional for a thorough check.",
-                "It's always better to be safe when it comes to your health. Please schedule a visit with a doctor to get a proper evaluation.",
-                "Your well-being matters. A healthcare provider will be able to guide you with the most accurate advice."
-            ]
-            
-            response = random.choice(empathetic_responses)
+            # NEW: Provide a best guess if we have any matches, even with low confidence
+            if best_matches and best_matches[0]["score"] > 20:  # Only suggest if we have some minimal match
+                best_match = best_matches[0]
+                condition_name = best_match["condition_name"]
+                confidence = best_match["score"]
+                
+                empathetic_responses = [
+                    f"I've done my best to understand your symptoms, but I cannot be certain. It might be **{condition_name}** (confidence: {confidence:.1f}%), but this is not a definitive diagnosis. I strongly recommend consulting a healthcare provider for a proper evaluation.",
+                    f"Based on what you've told me, the most likely possibility is **{condition_name}** (confidence: {confidence:.1f}%). However, I am not confident enough for a clear diagnosis. Please see a doctor to be sure.",
+                    f"Your symptoms are unclear to me, but they somewhat resemble **{condition_name}** (confidence: {confidence:.1f}%). This is only a guess. It's essential to seek professional medical advice for an accurate diagnosis.",
+                    f"I understand you're concerned about your symptoms. While I'm not certain, they could potentially indicate **{condition_name}** (confidence: {confidence:.1f}%). Please consult a healthcare professional for a proper evaluation.",
+                    f"After analyzing your symptoms, the closest match I found is **{condition_name}** (confidence: {confidence:.1f}%), but I lack confidence for a definitive conclusion. Your health and peace of mind are important - a doctor will be able to give you the best advice and care."
+                ]
+                response = random.choice(empathetic_responses)
+                
+                # Add the recommendation from the condition itself
+                response += f"\n\n**Suggested Action:** {best_match['condition'].get('suggested_action', 'Consult a healthcare professional.')}"
+                
+                # ADD FIRST AID SUGGESTION IF AVAILABLE
+                first_aid = best_match['condition'].get('first_aid')
+                if first_aid:
+                    response += f"\n**First Aid Advice:** {first_aid}"
+                
+                response += f"\n**Recommended Specialist:** {best_match['condition'].get('specialty', 'Primary Care Physician')}"
+
+            else:
+                # Fallback if no matches at all were found or confidence is very low
+                empathetic_responses = [
+                    "I understand you're concerned about your symptoms. Based on the information provided, I recommend consulting a healthcare professional for a proper evaluation.",
+                    "I've done my best to understand your symptoms, but I think it would be best for you to see a doctor for a definitive diagnosis.",
+                    "Your symptoms deserve proper medical attention. I encourage you to consult with a healthcare provider who can examine you properly.",
+                    "I know it can be worrying to have these symptoms. You're not alone—please reach out to a healthcare professional who can help you further.",
+                    "Your health and peace of mind are important. A doctor will be able to give you the best advice and care.",
+                    "Thank you for sharing these details. To ensure you get the right treatment, I recommend contacting a healthcare provider.",
+                    "Since symptoms can sometimes overlap between different conditions, it's safest to have a medical professional evaluate your situation.",
+                    "I can't provide a diagnosis, but a doctor will be able to examine you properly and suggest the right treatment.",
+                    "It's important to get clarity on what's causing your symptoms. Please consult with a healthcare professional as soon as you can.",
+                    "You're taking the right step by discussing your symptoms. Now I encourage you to follow up with a medical professional for a thorough check.",
+                    "It's always better to be safe when it comes to your health. Please schedule a visit with a doctor to get a proper evaluation.",
+                    "Your well-being matters. A healthcare provider will be able to guide you with the most accurate advice."
+                ]
+                response = random.choice(empathetic_responses)
+
+            # Reset for next conversation
             self.chat_history.append(f"Bot: {response}")
+            self.is_medical_chat = False
+            self.asked_questions.clear()
+            self.current_follow_ups = []
+            self.user_symptoms = []
+            self.user_info = {key: None for key in self.user_info}
+            self.diagnostic_stage = "initial"
+
             return response, False
             
         except Exception as e:

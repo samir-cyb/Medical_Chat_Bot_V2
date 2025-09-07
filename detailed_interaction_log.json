@@ -1,0 +1,654 @@
+[
+  {
+    "timestamp": "2025-09-07T02:12:19.050053",
+    "test_name": "Dengue Fever Case - Classic Symptoms",
+    "step": 1,
+    "user_input": "I have high fever for 4 days",
+    "response": "I want to make sure I understand your situation completely. What is your current temperature?",
+    "should_continue": true,
+    "symptoms": [
+      "high fever"
+    ],
+    "asked_questions": [
+      "What is your current temperature?"
+    ],
+    "is_medical_chat": true
+  },
+  {
+    "timestamp": "2025-09-07T02:12:19.186116",
+    "test_name": "Dengue Fever Case - Classic Symptoms",
+    "step": 2,
+    "user_input": "My temperature is 103.5",
+    "response": "I want to make sure I understand your situation completely. Have you noticed bleeding from gums?",
+    "should_continue": true,
+    "symptoms": [
+      "fever",
+      "high fever"
+    ],
+    "asked_questions": [
+      "Have you noticed bleeding from gums?",
+      "What is your current temperature?"
+    ],
+    "is_medical_chat": true
+  },
+  {
+    "timestamp": "2025-09-07T02:12:19.317186",
+    "test_name": "Dengue Fever Case - Classic Symptoms",
+    "step": 3,
+    "user_input": "Yes, I have a severe headache",
+    "response": "I understand this must be concerning. To help you better, Do you have severe headache or pain behind your eyes?",
+    "should_continue": true,
+    "symptoms": [
+      "headache",
+      "fever",
+      "high fever",
+      "severe headache",
+      "bleeding gums"
+    ],
+    "asked_questions": [
+      "Have you noticed bleeding from gums?",
+      "What is your current temperature?",
+      "Do you have severe headache or pain behind your eyes?"
+    ],
+    "is_medical_chat": true
+  },
+  {
+    "timestamp": "2025-09-07T02:12:19.441184",
+    "test_name": "Dengue Fever Case - Classic Symptoms",
+    "step": 4,
+    "user_input": "I was in Dhaka last week",
+    "response": "\n============================================================\nMEDICAL ASSESSMENT & RECOMMENDATIONS\n============================================================\n\nSUSPECTED CONDITION: Dengue Fever\nConfidence Level: 84.0%\n\nUrgency: Normal to Emergency\n\nRECOMMENDED ACTIONS:\n\u2022 Seek medical attention. For severe symptoms with bleeding or shock, go to emergency room immediately.\n\nFIRST AID / SELF-CARE:\n\u2022 Rest, stay hydrated with oral rehydration solutions, take acetaminophen for pain (avoid aspirin/NSA",
+    "should_continue": false,
+    "symptoms": [],
+    "asked_questions": [],
+    "is_medical_chat": false
+  },
+  {
+    "timestamp": "2025-09-07T02:12:25.320909",
+    "test_name": "Dengue Fever Case - With Bleeding",
+    "step": 1,
+    "user_input": "I've had high fever for 5 days",
+    "response": "Thank you for sharing that. To provide the best advice, What is your current temperature?",
+    "should_continue": true,
+    "symptoms": [
+      "high fever"
+    ],
+    "asked_questions": [
+      "What is your current temperature?"
+    ],
+    "is_medical_chat": true
+  },
+  {
+    "timestamp": "2025-09-07T02:12:25.459140",
+    "test_name": "Dengue Fever Case - With Bleeding",
+    "step": 2,
+    "user_input": "About 102 degrees",
+    "response": "Thank you for sharing that. To provide the best advice, Have you noticed bleeding from gums?",
+    "should_continue": true,
+    "symptoms": [
+      "fever",
+      "high fever"
+    ],
+    "asked_questions": [
+      "Have you noticed bleeding from gums?",
+      "What is your current temperature?"
+    ],
+    "is_medical_chat": true
+  },
+  {
+    "timestamp": "2025-09-07T02:12:25.606142",
+    "test_name": "Dengue Fever Case - With Bleeding",
+    "step": 3,
+    "user_input": "Yes, terrible headache",
+    "response": "I know health concerns can be worrying. Let me ask a few questions to clarify. Do you have severe headache or pain behind your eyes?",
+    "should_continue": true,
+    "symptoms": [
+      "headache",
+      "fever",
+      "high fever",
+      "severe headache",
+      "bleeding gums"
+    ],
+    "asked_questions": [
+      "Have you noticed bleeding from gums?",
+      "What is your current temperature?",
+      "Do you have severe headache or pain behind your eyes?"
+    ],
+    "is_medical_chat": true
+  },
+  {
+    "timestamp": "2025-09-07T02:12:25.731472",
+    "test_name": "Dengue Fever Case - With Bleeding",
+    "step": 4,
+    "user_input": "I live in Dhaka",
+    "response": "\n============================================================\nMEDICAL ASSESSMENT & RECOMMENDATIONS\n============================================================\n\nSUSPECTED CONDITION: Dengue Fever\nConfidence Level: 84.0%\n\nUrgency: Normal to Emergency\n\nRECOMMENDED ACTIONS:\n\u2022 Seek medical attention. For severe symptoms with bleeding or shock, go to emergency room immediately.\n\nFIRST AID / SELF-CARE:\n\u2022 Rest, stay hydrated with oral rehydration solutions, take acetaminophen for pain (avoid aspirin/NSA",
+    "should_continue": false,
+    "symptoms": [],
+    "asked_questions": [],
+    "is_medical_chat": false
+  },
+  {
+    "timestamp": "2025-09-07T02:12:31.312562",
+    "test_name": "Common Cold Case",
+    "step": 1,
+    "user_input": "I have a runny nose and cough",
+    "response": "I appreciate you telling me about this. To help me understand better, Do you have any skin rash or red spots?",
+    "should_continue": true,
+    "symptoms": [
+      "runny nose",
+      "cough"
+    ],
+    "asked_questions": [
+      "Do you have any skin rash or red spots?"
+    ],
+    "is_medical_chat": true
+  },
+  {
+    "timestamp": "2025-09-07T02:12:31.450332",
+    "test_name": "Common Cold Case",
+    "step": 2,
+    "user_input": "Yes, I have a sore throat",
+    "response": "I want to make sure I understand your situation completely. Do you have body aches or fatigue?",
+    "should_continue": true,
+    "symptoms": [
+      "runny nose",
+      "sore throat",
+      "cough",
+      "rash"
+    ],
+    "asked_questions": [
+      "Do you have body aches or fatigue?",
+      "Do you have any skin rash or red spots?"
+    ],
+    "is_medical_chat": true
+  },
+  {
+    "timestamp": "2025-09-07T02:12:31.574770",
+    "test_name": "Common Cold Case",
+    "step": 3,
+    "user_input": "No fever",
+    "response": "I want to make sure I understand your situation completely. How long have you had fever?",
+    "should_continue": true,
+    "symptoms": [
+      "sore throat",
+      "runny nose",
+      "fever",
+      "rash",
+      "cough"
+    ],
+    "asked_questions": [
+      "Do you have body aches or fatigue?",
+      "Do you have any skin rash or red spots?",
+      "How long have you had fever?"
+    ],
+    "is_medical_chat": true
+  },
+  {
+    "timestamp": "2025-09-07T02:12:31.712793",
+    "test_name": "Common Cold Case",
+    "step": 4,
+    "user_input": "It started 2 days ago",
+    "response": "I appreciate you telling me about this. To help me understand better, What is your current temperature?",
+    "should_continue": true,
+    "symptoms": [
+      "sore throat",
+      "runny nose",
+      "fever",
+      "rash",
+      "cough"
+    ],
+    "asked_questions": [
+      "What is your current temperature?",
+      "Do you have body aches or fatigue?",
+      "Do you have any skin rash or red spots?",
+      "How long have you had fever?"
+    ],
+    "is_medical_chat": true
+  },
+  {
+    "timestamp": "2025-09-07T02:12:31.873960",
+    "test_name": "Common Cold Case",
+    "step": 5,
+    "user_input": "No, I don't have body aches",
+    "response": "I know health concerns can be worrying. Let me ask a few questions to clarify. When did you first notice these symptoms?",
+    "should_continue": true,
+    "symptoms": [
+      "sore throat",
+      "body aches",
+      "runny nose",
+      "fever",
+      "rash",
+      "cough"
+    ],
+    "asked_questions": [
+      "What is your current temperature?",
+      "Do you have body aches or fatigue?",
+      "When did you first notice these symptoms?",
+      "Do you have any skin rash or red spots?",
+      "How long have you had fever?"
+    ],
+    "is_medical_chat": true
+  },
+  {
+    "timestamp": "2025-09-07T02:12:32.034970",
+    "test_name": "Common Cold Case",
+    "step": 6,
+    "user_input": "Yes, I'm sneezing a lot",
+    "response": "You're taking the right step by discussing your symptoms. Now I encourage you to follow up with a medical professional for a thorough check.",
+    "should_continue": false,
+    "symptoms": [
+      "sore throat",
+      "body aches",
+      "runny nose",
+      "sneezing",
+      "fever",
+      "rash",
+      "cough"
+    ],
+    "asked_questions": [
+      "What is your current temperature?",
+      "Do you have body aches or fatigue?",
+      "When did you first notice these symptoms?",
+      "Do you have any skin rash or red spots?",
+      "How long have you had fever?"
+    ],
+    "is_medical_chat": true
+  },
+  {
+    "timestamp": "2025-09-07T02:12:37.319675",
+    "test_name": "Appendicitis Case",
+    "step": 1,
+    "user_input": "I have severe pain in my lower right abdomen",
+    "response": "I appreciate you telling me about this. To help me understand better, On a scale of 1-10, how severe is the pain?",
+    "should_continue": true,
+    "symptoms": [
+      "severe pain",
+      "abdominal pain"
+    ],
+    "asked_questions": [
+      "On a scale of 1-10, how severe is the pain?"
+    ],
+    "is_medical_chat": true
+  },
+  {
+    "timestamp": "2025-09-07T02:12:37.469677",
+    "test_name": "Appendicitis Case",
+    "step": 2,
+    "user_input": "The pain is about 8 out of 10",
+    "response": "Thank you for sharing that. To provide the best advice, Are you having difficulty breathing?",
+    "should_continue": true,
+    "symptoms": [
+      "mild fever",
+      "severe pain",
+      "abdominal pain"
+    ],
+    "asked_questions": [
+      "Are you having difficulty breathing?",
+      "On a scale of 1-10, how severe is the pain?"
+    ],
+    "is_medical_chat": true
+  },
+  {
+    "timestamp": "2025-09-07T02:12:37.620677",
+    "test_name": "Appendicitis Case",
+    "step": 3,
+    "user_input": "Yes, I feel nauseous",
+    "response": "I appreciate you telling me about this. To help me understand better, Do you feel dizzy or faint?",
+    "should_continue": true,
+    "symptoms": [
+      "mild fever",
+      "nausea",
+      "difficulty breathing",
+      "abdominal pain",
+      "severe pain"
+    ],
+    "asked_questions": [
+      "Are you having difficulty breathing?",
+      "On a scale of 1-10, how severe is the pain?",
+      "Do you feel dizzy or faint?"
+    ],
+    "is_medical_chat": true
+  },
+  {
+    "timestamp": "2025-09-07T02:12:37.775607",
+    "test_name": "Appendicitis Case",
+    "step": 4,
+    "user_input": "It started yesterday and has been getting worse",
+    "response": "I know health concerns can be worrying. Let me ask a few questions to clarify. Is the pain spreading to other areas?",
+    "should_continue": true,
+    "symptoms": [
+      "mild fever",
+      "nausea",
+      "difficulty breathing",
+      "abdominal pain",
+      "severe pain"
+    ],
+    "asked_questions": [
+      "Are you having difficulty breathing?",
+      "Is the pain spreading to other areas?",
+      "On a scale of 1-10, how severe is the pain?",
+      "Do you feel dizzy or faint?"
+    ],
+    "is_medical_chat": true
+  },
+  {
+    "timestamp": "2025-09-07T02:12:37.918157",
+    "test_name": "Appendicitis Case",
+    "step": 5,
+    "user_input": "No, I don't have fever",
+    "response": "Thank you for sharing that. To provide the best advice, Are you experiencing sweating or nausea?",
+    "should_continue": true,
+    "symptoms": [
+      "mild fever",
+      "nausea",
+      "difficulty breathing",
+      "fever",
+      "abdominal pain",
+      "severe pain"
+    ],
+    "asked_questions": [
+      "Are you having difficulty breathing?",
+      "On a scale of 1-10, how severe is the pain?",
+      "Do you feel dizzy or faint?",
+      "Are you experiencing sweating or nausea?",
+      "Is the pain spreading to other areas?"
+    ],
+    "is_medical_chat": true
+  },
+  {
+    "timestamp": "2025-09-07T02:12:38.057171",
+    "test_name": "Appendicitis Case",
+    "step": 6,
+    "user_input": "Yes, it hurts more when I move",
+    "response": "I know health concerns can be worrying. Let me ask a few questions to clarify. Does the pain radiate to your arm, jaw, or back?",
+    "should_continue": true,
+    "symptoms": [
+      "mild fever",
+      "nausea",
+      "shortness of breath",
+      "difficulty breathing",
+      "fever",
+      "abdominal pain",
+      "severe pain"
+    ],
+    "asked_questions": [
+      "Are you having difficulty breathing?",
+      "On a scale of 1-10, how severe is the pain?",
+      "Do you feel dizzy or faint?",
+      "Does the pain radiate to your arm, jaw, or back?",
+      "Are you experiencing sweating or nausea?",
+      "Is the pain spreading to other areas?"
+    ],
+    "is_medical_chat": true
+  },
+  {
+    "timestamp": "2025-09-07T02:12:43.363164",
+    "test_name": "Chikungunya Case",
+    "step": 1,
+    "user_input": "I have high fever and joint pain",
+    "response": "Thank you for sharing that. To provide the best advice, How long have you had fever?",
+    "should_continue": true,
+    "symptoms": [
+      "joint pain",
+      "high fever"
+    ],
+    "asked_questions": [
+      "How long have you had fever?"
+    ],
+    "is_medical_chat": true
+  },
+  {
+    "timestamp": "2025-09-07T02:12:43.502164",
+    "test_name": "Chikungunya Case",
+    "step": 2,
+    "user_input": "My temperature is 102",
+    "response": "Your health and peace of mind are important. A doctor will be able to give you the best advice and care.",
+    "should_continue": false,
+    "symptoms": [
+      "joint pain",
+      "fever",
+      "high fever"
+    ],
+    "asked_questions": [
+      "How long have you had fever?"
+    ],
+    "is_medical_chat": true
+  },
+  {
+    "timestamp": "2025-09-07T02:12:43.634784",
+    "test_name": "Chikungunya Case",
+    "step": 3,
+    "user_input": "Yes, my joints are very painful",
+    "response": "Thank you for sharing these details. To ensure you get the right treatment, I recommend contacting a healthcare provider.",
+    "should_continue": false,
+    "symptoms": [
+      "joint pain",
+      "fever",
+      "high fever"
+    ],
+    "asked_questions": [
+      "How long have you had fever?"
+    ],
+    "is_medical_chat": true
+  },
+  {
+    "timestamp": "2025-09-07T02:12:43.779766",
+    "test_name": "Chikungunya Case",
+    "step": 4,
+    "user_input": "I was in Tejgaon recently",
+    "response": "Thank you for sharing these details. To ensure you get the right treatment, I recommend contacting a healthcare provider.",
+    "should_continue": false,
+    "symptoms": [
+      "joint pain",
+      "fever",
+      "high fever"
+    ],
+    "asked_questions": [
+      "How long have you had fever?"
+    ],
+    "is_medical_chat": true
+  },
+  {
+    "timestamp": "2025-09-07T02:12:43.788738",
+    "test_name": "Chikungunya Case",
+    "step": 5,
+    "user_input": "Yes, my wrists and knees are swollen",
+    "response": "\n============================================================\nMEDICAL ASSESSMENT & RECOMMENDATIONS\n============================================================\n\nSUSPECTED CONDITION: Chikungunya Fever\nConfidence Level: 72.0%\n\nUrgency: Normal to Dangerous\n\nRECOMMENDED ACTIONS:\n\u2022 Seek medical attention. For severe symptoms with bleeding or dehydration, go to emergency room immediately.\n\nFIRST AID / SELF-CARE:\n\u2022 Rest, stay hydrated, take pain relievers for joint discomfort. Do not give aspirin or NS",
+    "should_continue": false,
+    "symptoms": [],
+    "asked_questions": [],
+    "is_medical_chat": false
+  },
+  {
+    "timestamp": "2025-09-07T02:12:49.778472",
+    "test_name": "Heart Attack Case",
+    "step": 1,
+    "user_input": "I have chest pain",
+    "response": "I appreciate you telling me about this. To help me understand better, On a scale of 1-10, how severe is the pain?",
+    "should_continue": true,
+    "symptoms": [
+      "chest pain"
+    ],
+    "asked_questions": [
+      "On a scale of 1-10, how severe is the pain?"
+    ],
+    "is_medical_chat": true
+  },
+  {
+    "timestamp": "2025-09-07T02:12:49.918477",
+    "test_name": "Heart Attack Case",
+    "step": 2,
+    "user_input": "The pain is severe, about 9 out of 10",
+    "response": "Thank you for sharing that. To provide the best advice, Are you having difficulty breathing?",
+    "should_continue": true,
+    "symptoms": [
+      "mild fever",
+      "chest pain",
+      "severe pain"
+    ],
+    "asked_questions": [
+      "Are you having difficulty breathing?",
+      "On a scale of 1-10, how severe is the pain?"
+    ],
+    "is_medical_chat": true
+  },
+  {
+    "timestamp": "2025-09-07T02:12:50.051480",
+    "test_name": "Heart Attack Case",
+    "step": 3,
+    "user_input": "Yes, it's radiating to my left arm",
+    "response": "Thank you for sharing that. To provide the best advice, Do you feel dizzy or faint?",
+    "should_continue": true,
+    "symptoms": [
+      "mild fever",
+      "difficulty breathing",
+      "chest pain",
+      "severe pain"
+    ],
+    "asked_questions": [
+      "Are you having difficulty breathing?",
+      "On a scale of 1-10, how severe is the pain?",
+      "Do you feel dizzy or faint?"
+    ],
+    "is_medical_chat": true
+  },
+  {
+    "timestamp": "2025-09-07T02:12:50.205483",
+    "test_name": "Heart Attack Case",
+    "step": 4,
+    "user_input": "Yes, I'm sweating and feeling nauseous",
+    "response": "I understand you're concerned about your symptoms. Based on the information provided, I recommend consulting a healthcare professional for a proper evaluation.",
+    "should_continue": false,
+    "symptoms": [],
+    "asked_questions": [],
+    "is_medical_chat": false
+  },
+  {
+    "timestamp": "2025-09-07T02:12:50.345481",
+    "test_name": "Heart Attack Case",
+    "step": 5,
+    "user_input": "Yes, I'm having difficulty breathing",
+    "response": "I want to make sure I understand your situation completely. On a scale of 1-10, how severe is the pain?",
+    "should_continue": true,
+    "symptoms": [
+      "difficulty breathing",
+      "shortness of breath"
+    ],
+    "asked_questions": [
+      "On a scale of 1-10, how severe is the pain?"
+    ],
+    "is_medical_chat": true
+  },
+  {
+    "timestamp": "2025-09-07T02:12:50.497118",
+    "test_name": "Heart Attack Case",
+    "step": 6,
+    "user_input": "No, I don't have fever",
+    "response": "Thank you for sharing that. To provide the best advice, Are you having difficulty breathing?",
+    "should_continue": true,
+    "symptoms": [
+      "difficulty breathing",
+      "shortness of breath",
+      "fever"
+    ],
+    "asked_questions": [
+      "Are you having difficulty breathing?",
+      "On a scale of 1-10, how severe is the pain?"
+    ],
+    "is_medical_chat": true
+  },
+  {
+    "timestamp": "2025-09-07T02:12:56.288524",
+    "test_name": "Mixed Symptoms - Low Confidence",
+    "step": 1,
+    "user_input": "I have a mild headache",
+    "response": "I want to make sure I understand your situation completely. Do you have severe joint pain or swelling?",
+    "should_continue": true,
+    "symptoms": [
+      "headache",
+      "mild headache"
+    ],
+    "asked_questions": [
+      "Do you have severe joint pain or swelling?"
+    ],
+    "is_medical_chat": true
+  },
+  {
+    "timestamp": "2025-09-07T02:12:56.418523",
+    "test_name": "Mixed Symptoms - Low Confidence",
+    "step": 2,
+    "user_input": "No fever",
+    "response": "I appreciate you telling me about this. To help me understand better, How long have you had fever?",
+    "should_continue": true,
+    "symptoms": [
+      "headache",
+      "fever",
+      "mild headache"
+    ],
+    "asked_questions": [
+      "Do you have severe joint pain or swelling?",
+      "How long have you had fever?"
+    ],
+    "is_medical_chat": true
+  },
+  {
+    "timestamp": "2025-09-07T02:12:56.551521",
+    "test_name": "Mixed Symptoms - Low Confidence",
+    "step": 3,
+    "user_input": "A little tired but not too bad",
+    "response": "I appreciate you telling me about this. To help me understand better, What is your current temperature?",
+    "should_continue": true,
+    "symptoms": [
+      "fatigue",
+      "headache",
+      "fever",
+      "mild headache"
+    ],
+    "asked_questions": [
+      "What is your current temperature?",
+      "Do you have severe joint pain or swelling?",
+      "How long have you had fever?"
+    ],
+    "is_medical_chat": true
+  },
+  {
+    "timestamp": "2025-09-07T02:12:56.689479",
+    "test_name": "Mixed Symptoms - Low Confidence",
+    "step": 4,
+    "user_input": "No other symptoms really",
+    "response": "It's always better to be safe when it comes to your health. Please schedule a visit with a doctor to get a proper evaluation.",
+    "should_continue": false,
+    "symptoms": [
+      "fatigue",
+      "headache",
+      "fever",
+      "mild headache"
+    ],
+    "asked_questions": [
+      "What is your current temperature?",
+      "Do you have severe joint pain or swelling?",
+      "How long have you had fever?"
+    ],
+    "is_medical_chat": true
+  },
+  {
+    "timestamp": "2025-09-07T02:12:56.831916",
+    "test_name": "Mixed Symptoms - Low Confidence",
+    "step": 5,
+    "user_input": "It started today",
+    "response": "Since symptoms can sometimes overlap between different conditions, it's safest to have a medical professional evaluate your situation.",
+    "should_continue": false,
+    "symptoms": [
+      "fatigue",
+      "headache",
+      "fever",
+      "mild headache"
+    ],
+    "asked_questions": [
+      "What is your current temperature?",
+      "Do you have severe joint pain or swelling?",
+      "How long have you had fever?"
+    ],
+    "is_medical_chat": true
+  }
+]
